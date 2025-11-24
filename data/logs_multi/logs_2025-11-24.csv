@@ -1,0 +1,8 @@
+timestamp,user_email,department,source_ip,method,url,bytes_sent,bytes_received
+2025-11-24T09:15:32Z,michael.brown@company.com,Marketing,192.168.1.156,GET,https://chat.openai.com/chat,423,6789
+2025-11-24T10:05:17Z,jennifer.lee@company.com,Clinical,192.168.1.45,POST,https://api.openai.com/v1/embeddings,13456,1234
+2025-11-24T11:18:52Z,robert.martinez@company.com,Sales,192.168.1.178,GET,https://perplexity.ai/search,234,5678
+2025-11-24T12:33:28Z,amanda.taylor@company.com,Claims,192.168.1.89,POST,https://unknown-ai-saas.com/api/generate?patient=john.doe@example.com,4567,2345
+2025-11-24T13:47:41Z,christopher.white@company.com,Finance,192.168.1.102,POST,https://api.anthropic.com/v1/messages,11234,2345
+2025-11-24T14:21:07Z,stephanie.lee@company.com,Claims,192.168.1.89,POST,https://unknown-ai-saas.com/api/chat?claim=abc123,5234,3456
+2025-11-24T15:35:42Z,brian.wilson@company.com,Engineering,192.168.1.67,POST,https://api.githubcopilot.com/completions,1456,2567

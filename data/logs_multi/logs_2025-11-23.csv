@@ -1,0 +1,8 @@
+timestamp,user_email,department,source_ip,method,url,bytes_sent,bytes_received
+2025-11-23T09:15:32Z,sarah.chen@company.com,Clinical,192.168.1.45,POST,https://api.openai.com/v1/chat/completions?patient=12345,12500,2145
+2025-11-23T10:22:15Z,john.doe@company.com,Engineering,192.168.1.67,POST,https://api.githubcopilot.com/completions,1234,2345
+2025-11-23T11:33:44Z,maria.garcia@company.com,Claims,192.168.1.89,POST,https://api.anthropic.com/v1/messages,15234,3456
+2025-11-23T13:15:22Z,alex.wong@company.com,Finance,192.168.1.102,GET,https://claude.ai/chat/new,512,12456
+2025-11-23T14:45:11Z,emily.johnson@company.com,Legal,192.168.1.123,POST,https://api.openai.com/v1/chat/completions?record=ssn-123-45-6789,8912,4567
+2025-11-23T15:22:33Z,david.kim@company.com,Engineering,192.168.1.67,POST,https://api.githubcopilot.com/completions,987,1234
+2025-11-23T16:05:44Z,lisa.patel@company.com,HR,192.168.1.134,POST,https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent,2345,3456

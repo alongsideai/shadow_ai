@@ -1,0 +1,323 @@
+[
+  {
+    "id": "evt_061426f49389",
+    "timestamp": "2025-11-23T09:15:32",
+    "user_email": "sarah.chen@company.com",
+    "department": "Clinical",
+    "source_ip": "192.168.1.45",
+    "provider": "openai",
+    "service": "chat",
+    "url": "https://api.openai.com/v1/chat/completions?patient=12345",
+    "bytes_sent": 12500,
+    "bytes_received": 2145,
+    "risk_level": "high",
+    "risk_reasons": [
+      "high_sensitivity_department",
+      "large_data_transfer"
+    ],
+    "source_system": "network_logs_v1",
+    "notes": null,
+    "pii_risk": true,
+    "pii_reasons": [
+      "large_payload",
+      "high_sensitivity_large_payload",
+      "pii_keyword_in_url:patient"
+    ],
+    "use_case": "data_extraction"
+  },
+  {
+    "id": "evt_6ce32505abbe",
+    "timestamp": "2025-11-23T10:22:15",
+    "user_email": "john.doe@company.com",
+    "department": "Engineering",
+    "source_ip": "192.168.1.67",
+    "provider": "github_copilot",
+    "service": "code_assist",
+    "url": "https://api.githubcopilot.com/completions",
+    "bytes_sent": 1234,
+    "bytes_received": 2345,
+    "risk_level": "medium",
+    "risk_reasons": [
+      "external_ai_usage"
+    ],
+    "source_system": "network_logs_v1",
+    "notes": null,
+    "pii_risk": false,
+    "pii_reasons": [],
+    "use_case": "code_assistance"
+  },
+  {
+    "id": "evt_3c27ef98e441",
+    "timestamp": "2025-11-23T11:33:44",
+    "user_email": "maria.garcia@company.com",
+    "department": "Claims",
+    "source_ip": "192.168.1.89",
+    "provider": "anthropic",
+    "service": "chat",
+    "url": "https://api.anthropic.com/v1/messages",
+    "bytes_sent": 15234,
+    "bytes_received": 3456,
+    "risk_level": "high",
+    "risk_reasons": [
+      "high_sensitivity_department",
+      "large_data_transfer"
+    ],
+    "source_system": "network_logs_v1",
+    "notes": null,
+    "pii_risk": true,
+    "pii_reasons": [
+      "large_payload",
+      "high_sensitivity_large_payload"
+    ],
+    "use_case": "data_extraction"
+  },
+  {
+    "id": "evt_0ec8573a8fce",
+    "timestamp": "2025-11-23T13:15:22",
+    "user_email": "alex.wong@company.com",
+    "department": "Finance",
+    "source_ip": "192.168.1.102",
+    "provider": "anthropic",
+    "service": "web_ui",
+    "url": "https://claude.ai/chat/new",
+    "bytes_sent": 512,
+    "bytes_received": 12456,
+    "risk_level": "medium",
+    "risk_reasons": [
+      "medium_sensitivity_department"
+    ],
+    "source_system": "network_logs_v1",
+    "notes": null,
+    "pii_risk": false,
+    "pii_reasons": [],
+    "use_case": "content_generation"
+  },
+  {
+    "id": "evt_d688c9e371fd",
+    "timestamp": "2025-11-23T14:45:11",
+    "user_email": "emily.johnson@company.com",
+    "department": "Legal",
+    "source_ip": "192.168.1.123",
+    "provider": "openai",
+    "service": "chat",
+    "url": "https://api.openai.com/v1/chat/completions?record=ssn-123-45-6789",
+    "bytes_sent": 8912,
+    "bytes_received": 4567,
+    "risk_level": "high",
+    "risk_reasons": [
+      "high_sensitivity_department",
+      "large_data_transfer"
+    ],
+    "source_system": "network_logs_v1",
+    "notes": null,
+    "pii_risk": true,
+    "pii_reasons": [
+      "high_sensitivity_large_payload",
+      "pii_keyword_in_url:record",
+      "ssn_pattern_in_url"
+    ],
+    "use_case": "analysis_or_chat"
+  },
+  {
+    "id": "evt_ba4611ce1933",
+    "timestamp": "2025-11-23T15:22:33",
+    "user_email": "david.kim@company.com",
+    "department": "Engineering",
+    "source_ip": "192.168.1.67",
+    "provider": "github_copilot",
+    "service": "code_assist",
+    "url": "https://api.githubcopilot.com/completions",
+    "bytes_sent": 987,
+    "bytes_received": 1234,
+    "risk_level": "medium",
+    "risk_reasons": [
+      "external_ai_usage"
+    ],
+    "source_system": "network_logs_v1",
+    "notes": null,
+    "pii_risk": false,
+    "pii_reasons": [],
+    "use_case": "code_assistance"
+  },
+  {
+    "id": "evt_ecb9c7f16971",
+    "timestamp": "2025-11-23T16:05:44",
+    "user_email": "lisa.patel@company.com",
+    "department": "HR",
+    "source_ip": "192.168.1.134",
+    "provider": "google",
+    "service": "chat",
+    "url": "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent",
+    "bytes_sent": 2345,
+    "bytes_received": 3456,
+    "risk_level": "medium",
+    "risk_reasons": [
+      "medium_sensitivity_department"
+    ],
+    "source_system": "network_logs_v1",
+    "notes": null,
+    "pii_risk": false,
+    "pii_reasons": [],
+    "use_case": "analysis_or_chat"
+  },
+  {
+    "id": "evt_e6c12da4ed8a",
+    "timestamp": "2025-11-24T09:15:32",
+    "user_email": "michael.brown@company.com",
+    "department": "Marketing",
+    "source_ip": "192.168.1.156",
+    "provider": "openai",
+    "service": "web_ui",
+    "url": "https://chat.openai.com/chat",
+    "bytes_sent": 423,
+    "bytes_received": 6789,
+    "risk_level": "medium",
+    "risk_reasons": [
+      "external_ai_usage"
+    ],
+    "source_system": "network_logs_v1",
+    "notes": null,
+    "pii_risk": false,
+    "pii_reasons": [],
+    "use_case": "content_generation"
+  },
+  {
+    "id": "evt_0b05d8765de4",
+    "timestamp": "2025-11-24T10:05:17",
+    "user_email": "jennifer.lee@company.com",
+    "department": "Clinical",
+    "source_ip": "192.168.1.45",
+    "provider": "openai",
+    "service": "embeddings",
+    "url": "https://api.openai.com/v1/embeddings",
+    "bytes_sent": 13456,
+    "bytes_received": 1234,
+    "risk_level": "high",
+    "risk_reasons": [
+      "high_sensitivity_department",
+      "large_data_transfer"
+    ],
+    "source_system": "network_logs_v1",
+    "notes": null,
+    "pii_risk": true,
+    "pii_reasons": [
+      "large_payload",
+      "high_sensitivity_large_payload"
+    ],
+    "use_case": "data_extraction"
+  },
+  {
+    "id": "evt_e0ca32f66c80",
+    "timestamp": "2025-11-24T11:18:52",
+    "user_email": "robert.martinez@company.com",
+    "department": "Sales",
+    "source_ip": "192.168.1.178",
+    "provider": "perplexity",
+    "service": "web_ui",
+    "url": "https://perplexity.ai/search",
+    "bytes_sent": 234,
+    "bytes_received": 5678,
+    "risk_level": "medium",
+    "risk_reasons": [
+      "external_ai_usage"
+    ],
+    "source_system": "network_logs_v1",
+    "notes": null,
+    "pii_risk": false,
+    "pii_reasons": [],
+    "use_case": "unknown"
+  },
+  {
+    "id": "evt_9657b1a923c5",
+    "timestamp": "2025-11-24T12:33:28",
+    "user_email": "amanda.taylor@company.com",
+    "department": "Claims",
+    "source_ip": "192.168.1.89",
+    "provider": "unknown",
+    "service": "unknown",
+    "url": "https://unknown-ai-saas.com/api/generate?patient=john.doe@example.com",
+    "bytes_sent": 4567,
+    "bytes_received": 2345,
+    "risk_level": "high",
+    "risk_reasons": [
+      "unknown_ai_provider"
+    ],
+    "source_system": "network_logs_v1",
+    "notes": null,
+    "pii_risk": true,
+    "pii_reasons": [
+      "high_sensitivity_large_payload",
+      "pii_keyword_in_url:patient",
+      "email_pattern_in_url"
+    ],
+    "use_case": "unknown"
+  },
+  {
+    "id": "evt_cfb462c6ffdc",
+    "timestamp": "2025-11-24T13:47:41",
+    "user_email": "christopher.white@company.com",
+    "department": "Finance",
+    "source_ip": "192.168.1.102",
+    "provider": "anthropic",
+    "service": "chat",
+    "url": "https://api.anthropic.com/v1/messages",
+    "bytes_sent": 11234,
+    "bytes_received": 2345,
+    "risk_level": "high",
+    "risk_reasons": [
+      "large_data_transfer"
+    ],
+    "source_system": "network_logs_v1",
+    "notes": null,
+    "pii_risk": true,
+    "pii_reasons": [
+      "large_payload"
+    ],
+    "use_case": "data_extraction"
+  },
+  {
+    "id": "evt_16487f160fdd",
+    "timestamp": "2025-11-24T14:21:07",
+    "user_email": "stephanie.lee@company.com",
+    "department": "Claims",
+    "source_ip": "192.168.1.89",
+    "provider": "unknown",
+    "service": "unknown",
+    "url": "https://unknown-ai-saas.com/api/chat?claim=abc123",
+    "bytes_sent": 5234,
+    "bytes_received": 3456,
+    "risk_level": "high",
+    "risk_reasons": [
+      "unknown_ai_provider"
+    ],
+    "source_system": "network_logs_v1",
+    "notes": null,
+    "pii_risk": true,
+    "pii_reasons": [
+      "high_sensitivity_large_payload",
+      "pii_keyword_in_url:claim"
+    ],
+    "use_case": "unknown"
+  },
+  {
+    "id": "evt_68b4e0ef30b9",
+    "timestamp": "2025-11-24T15:35:42",
+    "user_email": "brian.wilson@company.com",
+    "department": "Engineering",
+    "source_ip": "192.168.1.67",
+    "provider": "github_copilot",
+    "service": "code_assist",
+    "url": "https://api.githubcopilot.com/completions",
+    "bytes_sent": 1456,
+    "bytes_received": 2567,
+    "risk_level": "medium",
+    "risk_reasons": [
+      "external_ai_usage"
+    ],
+    "source_system": "network_logs_v1",
+    "notes": null,
+    "pii_risk": false,
+    "pii_reasons": [],
+    "use_case": "code_assistance"
+  }
+]

@@ -1,0 +1,2 @@
+# Shadow AI Detection Platform
+# No external dependencies required - uses Python standard library only

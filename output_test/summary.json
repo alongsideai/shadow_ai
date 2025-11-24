@@ -1,0 +1,121 @@
+{
+  "kpis": {
+    "total_events": 14,
+    "unique_users": 14,
+    "shadow_ai_events": 14,
+    "shadow_ai_percentage": 100.0,
+    "high_risk_events": 7,
+    "high_risk_percentage": 50.0,
+    "pii_events_count": 7,
+    "pii_events_percentage": 50.0
+  },
+  "risk_counts": {
+    "low": 0,
+    "medium": 7,
+    "high": 7
+  },
+  "events_by_provider": {
+    "openai": 4,
+    "github_copilot": 3,
+    "anthropic": 3,
+    "google": 1,
+    "perplexity": 1,
+    "unknown": 2
+  },
+  "events_by_department": {
+    "Clinical": 2,
+    "Engineering": 3,
+    "Claims": 3,
+    "Finance": 2,
+    "Legal": 1,
+    "HR": 1,
+    "Marketing": 1,
+    "Sales": 1
+  },
+  "high_risk_events_by_department": {
+    "Clinical": 2,
+    "Claims": 3,
+    "Legal": 1,
+    "Finance": 1
+  },
+  "time_range": {
+    "start": "2025-11-23T09:15:32",
+    "end": "2025-11-24T15:35:42"
+  },
+  "events_per_day": {
+    "2025-11-23": 7,
+    "2025-11-24": 7
+  },
+  "pii_events_by_department": {
+    "Clinical": 2,
+    "Claims": 3,
+    "Legal": 1,
+    "Finance": 1
+  },
+  "events_by_use_case": {
+    "data_extraction": 4,
+    "code_assistance": 3,
+    "content_generation": 2,
+    "analysis_or_chat": 2,
+    "unknown": 3
+  },
+  "high_risk_events_by_use_case": {
+    "data_extraction": 4,
+    "analysis_or_chat": 1,
+    "unknown": 2
+  },
+  "top_departments": [
+    {
+      "name": "Engineering",
+      "count": 3
+    },
+    {
+      "name": "Claims",
+      "count": 3
+    },
+    {
+      "name": "Clinical",
+      "count": 2
+    }
+  ],
+  "top_high_risk_users": [
+    {
+      "email": "sarah.chen@company.com",
+      "high_risk_count": 1
+    },
+    {
+      "email": "maria.garcia@company.com",
+      "high_risk_count": 1
+    },
+    {
+      "email": "emily.johnson@company.com",
+      "high_risk_count": 1
+    },
+    {
+      "email": "jennifer.lee@company.com",
+      "high_risk_count": 1
+    },
+    {
+      "email": "amanda.taylor@company.com",
+      "high_risk_count": 1
+    }
+  ],
+  "top_risks": [
+    {
+      "title": "Claims team using public AI tools",
+      "description": "Detected 3 high-risk AI events from the Claims department. This department handles sensitive data that should not be processed by external AI systems.",
+      "suggested_next_step": "Immediately review Claims team's AI usage policies and provide approved alternatives."
+    },
+    {
+      "title": "Unknown AI tools in use with no governance",
+      "description": "Found 2 events using unidentified AI services. These tools are outside IT visibility and may pose compliance risks.",
+      "suggested_next_step": "Conduct an AI tool inventory and establish an approved vendor list."
+    },
+    {
+      "title": "Significant data being sent to AI providers",
+      "description": "Detected 5 events with large data transfers (>4KB). This may indicate employees uploading documents or sensitive information.",
+      "suggested_next_step": "Implement DLP controls and train employees on data handling policies."
+    }
+  ],
+  "shadow_ai_profile": "Most AI usage is in Engineering (21%) and Claims (21%). About 100.0% of all AI events go to unsanctioned or unknown AI tools."
+}

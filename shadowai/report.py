@@ -1,0 +1,1653 @@
+"""Report generation for Shadow AI Detection Platform."""
+
+import json
+from pathlib import Path
+from typing import List, Dict, Any
+from .models import AIUsageEvent
+
+
+def write_events_json(events: List[AIUsageEvent], output_path: Path) -> None:
+    """
+    Write events to JSON file.
+
+    Args:
+        events: List of AIUsageEvent objects
+        output_path: Path to output JSON file
+    """
+    events_data = [event.to_dict() for event in events]
+
+    with open(output_path, 'w', encoding='utf-8') as f:
+        json.dump(events_data, f, indent=2, ensure_ascii=False)
+
+
+def write_summary_json(summary: Dict[str, Any], output_path: Path) -> None:
+    """
+    Write summary to JSON file.
+
+    Args:
+        summary: Summary dictionary
+        output_path: Path to output JSON file
+    """
+    with open(output_path, 'w', encoding='utf-8') as f:
+        json.dump(summary, f, indent=2, ensure_ascii=False)
+
+
+def render_dashboard(events: List[AIUsageEvent], summary: Dict[str, Any], output_path: Path) -> None:
+    """
+    Generate an executive-friendly HTML dashboard.
+
+    Args:
+        events: List of AIUsageEvent objects
+        summary: Summary dictionary
+        output_path: Path to output HTML file
+    """
+    html_content = _generate_html(events, summary)
+
+    with open(output_path, 'w', encoding='utf-8') as f:
+        f.write(html_content)
+
+
+def _generate_html(events: List[AIUsageEvent], summary: Dict[str, Any]) -> str:
+    """Generate the complete HTML dashboard."""
+
+    kpis = summary.get('kpis', {})
+    risk_counts = summary.get('risk_counts', {})
+    events_by_dept = summary.get('events_by_department', {})
+    high_risk_by_dept = summary.get('high_risk_events_by_department', {})
+    top_risks = summary.get('top_risks', [])
+    shadow_ai_profile = summary.get('shadow_ai_profile', '')
+    time_range = summary.get('time_range', {})
+
+    # Serialize events for embedding in HTML
+    events_data = [event.to_dict() for event in events]
+    events_json = json.dumps(events_data)
+
+    # Pass the entire summary to JavaScript for consistency
+    chart_data_json = json.dumps(summary)
+
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shadow AI Scan Report</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }}
+
+        .container {{
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }}
+
+        .header {{
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }}
+
+        .header h1 {{
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }}
+
+        .header p {{
+            font-size: 1.1em;
+            opacity: 0.95;
+            margin-bottom: 5px;
+        }}
+
+        .header .date-range {{
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-top: 10px;
+        }}
+
+        .content {{
+            padding: 40px;
+        }}
+
+        .kpi-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }}
+
+        .kpi-card {{
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 25px;
+            border-left: 4px solid #667eea;
+        }}
+
+        .kpi-card.high-risk {{
+            border-left-color: #ef4444;
+        }}
+
+        .kpi-card.shadow-ai {{
+            border-left-color: #f59e0b;
+        }}
+
+        .kpi-value {{
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }}
+
+        .kpi-label {{
+            font-size: 0.95em;
+            color: #6b7280;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }}
+
+        .kpi-description {{
+            font-size: 0.85em;
+            color: #9ca3af;
+            margin-top: 8px;
+        }}
+
+        .section {{
+            margin-bottom: 40px;
+        }}
+
+        .section-title {{
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }}
+
+        .charts-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }}
+
+        .chart-container {{
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }}
+
+        .chart-title {{
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 20px;
+            text-align: center;
+        }}
+
+        .profile-box {{
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 40px;
+            border-left: 4px solid #f59e0b;
+        }}
+
+        .profile-box p {{
+            font-size: 1.1em;
+            color: #78350f;
+            line-height: 1.6;
+        }}
+
+        .risk-cards {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }}
+
+        .risk-card {{
+            background: #fee;
+            border-radius: 8px;
+            padding: 25px;
+            border-left: 4px solid #ef4444;
+        }}
+
+        .risk-card-title {{
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #991b1b;
+            margin-bottom: 12px;
+        }}
+
+        .risk-card-description {{
+            font-size: 1em;
+            color: #7f1d1d;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }}
+
+        .risk-card-next-step {{
+            font-size: 0.95em;
+            color: #dc2626;
+            font-weight: 600;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+        }}
+
+        .next-steps {{
+            background: #eff6ff;
+            border-radius: 8px;
+            padding: 30px;
+            border-left: 4px solid #3b82f6;
+        }}
+
+        .next-steps h3 {{
+            font-size: 1.5em;
+            color: #1e40af;
+            margin-bottom: 15px;
+        }}
+
+        .next-steps ul {{
+            list-style: none;
+            padding: 0;
+        }}
+
+        .next-steps li {{
+            font-size: 1.05em;
+            color: #1e40af;
+            padding: 12px 0;
+            padding-left: 30px;
+            position: relative;
+            line-height: 1.6;
+        }}
+
+        .next-steps li:before {{
+            content: "→";
+            position: absolute;
+            left: 0;
+            font-weight: 700;
+            color: #3b82f6;
+        }}
+
+        /* Event Table Styles */
+        .filters-bar {{
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            align-items: end;
+        }}
+
+        .filter-group {{
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }}
+
+        .filter-label {{
+            font-size: 0.9em;
+            font-weight: 600;
+            color: #4b5563;
+        }}
+
+        .filter-group select,
+        .filter-group input {{
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.95em;
+            background: white;
+        }}
+
+        .filter-group select:focus,
+        .filter-group input:focus {{
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }}
+
+        .event-table-container {{
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            overflow-x: auto;
+        }}
+
+        .event-table {{
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }}
+
+        .event-table thead {{
+            background: #667eea;
+            color: white;
+        }}
+
+        .event-table th {{
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9em;
+        }}
+
+        .event-table td {{
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 0.9em;
+        }}
+
+        .event-table tbody tr {{
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }}
+
+        .event-table tbody tr:hover {{
+            background-color: #f3f4f6;
+        }}
+
+        .risk-badge {{
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }}
+
+        .risk-badge.high {{
+            background: #fee;
+            color: #dc2626;
+        }}
+
+        .risk-badge.medium {{
+            background: #fef3c7;
+            color: #d97706;
+        }}
+
+        .risk-badge.low {{
+            background: #d1fae5;
+            color: #059669;
+        }}
+
+        /* Modal Styles */
+        .modal {{
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }}
+
+        .modal.show {{
+            display: flex;
+        }}
+
+        .modal-content {{
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }}
+
+        .modal-close {{
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 2em;
+            color: #9ca3af;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+        }}
+
+        .modal-close:hover {{
+            color: #4b5563;
+        }}
+
+        .modal-title {{
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 20px;
+            padding-right: 40px;
+        }}
+
+        .modal-body {{
+            color: #4b5563;
+            line-height: 1.6;
+        }}
+
+        .event-detail-section {{
+            margin-bottom: 20px;
+        }}
+
+        .event-detail-label {{
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }}
+
+        .event-detail-value {{
+            color: #6b7280;
+            word-break: break-word;
+        }}
+
+        .risk-reasons-list {{
+            list-style: none;
+            padding: 0;
+            margin: 10px 0;
+        }}
+
+        .risk-reasons-list li {{
+            padding: 8px 12px;
+            background: #f3f4f6;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border-left: 3px solid #667eea;
+        }}
+
+        .follow-up-list {{
+            list-style: none;
+            padding: 0;
+            margin: 10px 0;
+        }}
+
+        .follow-up-list li {{
+            padding: 10px 12px;
+            background: #eff6ff;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            padding-left: 30px;
+            position: relative;
+        }}
+
+        .follow-up-list li:before {{
+            content: "→";
+            position: absolute;
+            left: 10px;
+            color: #3b82f6;
+            font-weight: 700;
+        }}
+
+        /* PII/PHI Risk Accent */
+        .kpi-card.pii-risk {{
+            border-left-color: #f59e0b;
+            background: linear-gradient(135deg, #fef3c7 0%, #fef9e7 100%);
+        }}
+
+        /* Insights Block */
+        .insights-block {{
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border-left: 4px solid #f59e0b;
+        }}
+
+        .insights-block h2 {{
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #78350f;
+            margin-bottom: 15px;
+        }}
+
+        .insights-block p {{
+            font-size: 1.05em;
+            color: #78350f;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }}
+
+        .insights-block ul {{
+            list-style: none;
+            padding: 0;
+            margin: 10px 0;
+        }}
+
+        .insights-block ul li {{
+            padding: 8px 0 8px 25px;
+            position: relative;
+            color: #78350f;
+            line-height: 1.6;
+        }}
+
+        .insights-block ul li:before {{
+            content: "⚠";
+            position: absolute;
+            left: 0;
+            color: #f59e0b;
+            font-weight: 700;
+        }}
+
+        /* Insight Cards Grid */
+        .insights-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }}
+
+        .insight-card {{
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 25px;
+            border-left: 4px solid #667eea;
+        }}
+
+        .insight-card h3 {{
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 12px;
+        }}
+
+        .insight-card p {{
+            font-size: 0.95em;
+            color: #4b5563;
+            line-height: 1.6;
+        }}
+
+        /* Chart Captions */
+        .chart-caption {{
+            font-size: 0.9em;
+            color: #6b7280;
+            font-style: italic;
+            margin-top: 15px;
+            text-align: center;
+            line-height: 1.5;
+        }}
+
+        /* Recommendations Section */
+        #recommendations {{
+            background: #eff6ff;
+            border-radius: 8px;
+            padding: 30px;
+            border-left: 4px solid #3b82f6;
+            margin-top: 40px;
+        }}
+
+        #recommendations h2 {{
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #1e40af;
+            margin-bottom: 20px;
+        }}
+
+        #recommendations ol {{
+            counter-reset: rec-counter;
+            list-style: none;
+            padding: 0;
+        }}
+
+        #recommendations ol li {{
+            counter-increment: rec-counter;
+            padding: 20px;
+            margin-bottom: 15px;
+            background: white;
+            border-radius: 6px;
+            position: relative;
+            padding-left: 60px;
+        }}
+
+        #recommendations ol li:before {{
+            content: counter(rec-counter);
+            position: absolute;
+            left: 20px;
+            top: 20px;
+            width: 30px;
+            height: 30px;
+            background: #3b82f6;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1em;
+        }}
+
+        #recommendations ol li strong {{
+            display: block;
+            font-size: 1.1em;
+            color: #1e40af;
+            margin-bottom: 8px;
+        }}
+
+        #recommendations ol li p {{
+            color: #4b5563;
+            line-height: 1.6;
+            margin: 0;
+        }}
+
+        /* Filter Checkbox */
+        .filter-checkbox {{
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            color: #4b5563;
+        }}
+
+        .filter-checkbox input[type="checkbox"] {{
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+        }}
+
+        .filter-checkbox:hover {{
+            background: #f3f4f6;
+        }}
+
+        @media (max-width: 768px) {{
+            .container {{
+                border-radius: 0;
+            }}
+
+            .header h1 {{
+                font-size: 1.8em;
+            }}
+
+            .content {{
+                padding: 20px;
+            }}
+
+            .kpi-grid,
+            .charts-grid,
+            .risk-cards {{
+                grid-template-columns: 1fr;
+            }}
+
+            .filters-bar {{
+                grid-template-columns: 1fr;
+            }}
+
+            .event-table {{
+                font-size: 0.8em;
+            }}
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Shadow AI Scan Report</h1>
+            <p>Snapshot of AI usage across your organization</p>
+            <div class="date-range">
+                Log coverage: {time_range.get('start', 'N/A')} to {time_range.get('end', 'N/A')}
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- KPI Cards -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-value">{kpis.get('total_events', 0)}</div>
+                    <div class="kpi-label">Total AI Events</div>
+                    <div class="kpi-description">AI-related requests detected in network logs</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-value">{kpis.get('unique_users', 0)}</div>
+                    <div class="kpi-label">Unique Users Using AI</div>
+                    <div class="kpi-description">Individual employees accessing AI tools</div>
+                </div>
+
+                <div class="kpi-card shadow-ai">
+                    <div class="kpi-value">{kpis.get('shadow_ai_percentage', 0)}%</div>
+                    <div class="kpi-label">Shadow AI Share</div>
+                    <div class="kpi-description">{kpis.get('shadow_ai_events', 0)} events to unsanctioned tools</div>
+                </div>
+
+                <div class="kpi-card high-risk">
+                    <div class="kpi-value">{kpis.get('high_risk_events', 0)}</div>
+                    <div class="kpi-label">High-Risk Events</div>
+                    <div class="kpi-description">{kpis.get('high_risk_percentage', 0)}% of total events</div>
+                </div>
+
+                <div class="kpi-card pii-risk">
+                    <div class="kpi-value">{kpis.get('pii_events_count', 0)}</div>
+                    <div class="kpi-label">PII/PHI-Risky Events</div>
+                    <div class="kpi-description">Events where patterns suggest documents, records, or personal data may be sent to AI tools (approx. {kpis.get('pii_events_percentage', 0)}% of AI events)</div>
+                </div>
+            </div>
+
+            <!-- Sensitive Data Exposure Insights -->
+            <div class="section">
+                <div class="insights-block" id="pii-insights">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Shadow AI Profile -->
+            <div class="section">
+                <h2 class="section-title">Shadow AI Profile</h2>
+                <div class="profile-box">
+                    <p>{shadow_ai_profile}</p>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="section">
+                <h2 class="section-title">Usage Analytics</h2>
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <div class="chart-title">Risk Breakdown</div>
+                        <canvas id="riskChart"></canvas>
+                        <p id="risk-chart-caption" class="chart-caption"></p>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-title">AI Usage by Department</div>
+                        <canvas id="deptChart"></canvas>
+                        <p id="dept-chart-caption" class="chart-caption"></p>
+                    </div>
+                </div>
+
+                <!-- PII/PHI Risk by Department Chart -->
+                <div class="charts-grid" style="margin-top: 30px;" id="pii-chart-section">
+                    <div class="chart-container">
+                        <div class="chart-title">PII/PHI-Risky Events by Department</div>
+                        <canvas id="piiDeptChart"></canvas>
+                        <p class="chart-caption">Departments where employees may be sending documents or sensitive data to AI tools</p>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-title">AI Use Case Breakdown</div>
+                        <canvas id="useCaseChart"></canvas>
+                        <p id="usecase-chart-caption" class="chart-caption"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Insights & Observations -->
+            <div class="section" id="insights-section">
+                <h2 class="section-title">Insights & Observations</h2>
+                <div class="insights-grid">
+                    <div class="insight-card" id="insight-1"></div>
+                    <div class="insight-card" id="insight-2"></div>
+                    <div class="insight-card" id="insight-3"></div>
+                </div>
+            </div>
+
+            <!-- Top Risks -->
+            <div class="section">
+                <h2 class="section-title">Top 3 Risks</h2>
+                <div class="risk-cards">
+                    {"".join(_render_risk_card(risk) for risk in top_risks[:3])}
+                </div>
+            </div>
+
+            <!-- Next Steps -->
+            <div class="section">
+                <div class="next-steps">
+                    <h3>Recommended Next Steps</h3>
+                    <ul>
+                        <li>Run a full AI Risk &amp; Readiness Assessment based on these findings</li>
+                        <li>Define a sanctioned AI toolkit and usage policy for high-sensitivity teams</li>
+                        <li>Implement ongoing AI usage monitoring and governance</li>
+                        <li>Launch an AI enablement program to meet employee demand safely</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Event Details Section -->
+            <div class="section" id="event-details">
+                <h2 class="section-title">Event Details</h2>
+
+                <!-- Filters -->
+                <div class="filters-bar">
+                    <div class="filter-group">
+                        <label class="filter-label">Risk Level</label>
+                        <select id="filter-risk">
+                            <option value="all">All</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">Department</label>
+                        <select id="filter-department">
+                            <option value="all">All</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">Provider</label>
+                        <select id="filter-provider">
+                            <option value="all">All</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-label">Search</label>
+                        <input type="text" id="filter-search" placeholder="Search by user, dept, provider, URL...">
+                    </div>
+
+                    <div class="filter-group">
+                        <label class="filter-checkbox">
+                            <input type="checkbox" id="filter-pii-only">
+                            Show only events with potential PII/PHI risk
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Event Table -->
+                <div class="event-table-container">
+                    <table class="event-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>User</th>
+                                <th>Department</th>
+                                <th>Provider</th>
+                                <th>Risk</th>
+                                <th>Summary</th>
+                            </tr>
+                        </thead>
+                        <tbody id="event-table-body">
+                            <!-- Populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- What We Recommend Next -->
+            <section id="recommendations">
+                <h2>What We Recommend Next</h2>
+                <ol>
+                    <li>
+                        <strong>Run an AI Risk & Readiness Assessment (4–6 weeks)</strong>
+                        <p>Validate these findings, map your AI usage in detail, and identify where sensitive data and critical workflows are exposed.</p>
+                    </li>
+                    <li>
+                        <strong>Define a sanctioned AI toolkit and usage policy</strong>
+                        <p>Clarify which AI tools are approved, where they can be used, and how sensitive data should be handled.</p>
+                    </li>
+                    <li>
+                        <strong>Enable teams with governed, high-ROI AI workflows</strong>
+                        <p>Replace risky shadow usage with safe, production-ready AI workflows – supported by training, guardrails, and ongoing monitoring.</p>
+                    </li>
+                </ol>
+            </section>
+        </div>
+    </div>
+
+    <!-- Event Detail Modal -->
+    <div id="event-modal" class="modal">
+        <div class="modal-content">
+            <button id="event-modal-close" class="modal-close">&times;</button>
+            <h3 class="modal-title">Event Details</h3>
+            <div id="event-modal-body" class="modal-body">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Embedded event and summary data
+        window.SHADOW_AI_EVENTS = {events_json};
+        window.SHADOW_AI_SUMMARY = {chart_data_json};
+    </script>
+
+    <script>
+        // ===== Chart Initialization Functions =====
+
+        // Initialize Risk Breakdown Chart (Donut)
+        function initRiskChart() {{
+            const riskCtx = document.getElementById('riskChart');
+            if (!riskCtx) return;
+
+            const summaryForRisk = window.SHADOW_AI_SUMMARY || {{}};
+            const riskCountsData = summaryForRisk.risk_counts || {{}};
+            const riskChart = new Chart(riskCtx.getContext('2d'), {{
+            type: 'doughnut',
+            data: {{
+                labels: ['Low Risk', 'Medium Risk', 'High Risk'],
+                datasets: [{{
+                    data: [
+                        riskCountsData.low || 0,
+                        riskCountsData.medium || 0,
+                        riskCountsData.high || 0
+                    ],
+                    backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }}]
+            }},
+            options: {{
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {{
+                    legend: {{
+                        position: 'bottom',
+                        labels: {{
+                            font: {{ size: 14 }},
+                            padding: 15
+                        }}
+                    }}
+                }},
+                onClick: (event, activeElements) => {{
+                    if (activeElements.length > 0) {{
+                        const index = activeElements[0].index;
+                        const riskLevels = ['low', 'medium', 'high'];
+                        filters.risk = riskLevels[index];
+                        document.getElementById('filter-risk').value = filters.risk;
+                        renderTable();
+
+                        // Scroll to event details
+                        document.getElementById('event-details').scrollIntoView({{ behavior: 'smooth' }});
+                    }}
+                }}
+            }}
+        }});
+        }}
+
+        // Initialize Department Chart (Bar)
+        function initDeptChart() {{
+            const deptCtx = document.getElementById('deptChart');
+            if (!deptCtx) return;
+
+            const summaryForDept = window.SHADOW_AI_SUMMARY || {{}};
+            const eventsByDept = summaryForDept.events_by_department || {{}};
+            const highRiskByDept = summaryForDept.high_risk_events_by_department || {{}};
+            const deptLabels = Object.keys(eventsByDept);
+            const deptData = Object.values(eventsByDept);
+            const highRiskDeptData = deptLabels.map(dept => highRiskByDept[dept] || 0);
+
+            const deptChart = new Chart(deptCtx.getContext('2d'), {{
+            type: 'bar',
+            data: {{
+                labels: deptLabels,
+                datasets: [
+                    {{
+                        label: 'Total Events',
+                        data: deptData,
+                        backgroundColor: '#667eea',
+                        borderRadius: 4
+                    }},
+                    {{
+                        label: 'High Risk Events',
+                        data: highRiskDeptData,
+                        backgroundColor: '#ef4444',
+                        borderRadius: 4
+                    }}
+                ]
+            }},
+            options: {{
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {{
+                    legend: {{
+                        position: 'bottom',
+                        labels: {{
+                            font: {{ size: 14 }},
+                            padding: 15
+                        }}
+                    }}
+                }},
+                scales: {{
+                    y: {{
+                        beginAtZero: true,
+                        ticks: {{
+                            stepSize: 1
+                        }}
+                    }}
+                }},
+                onClick: (event, activeElements) => {{
+                    if (activeElements.length > 0) {{
+                        const index = activeElements[0].index;
+                        filters.department = deptLabels[index];
+                        document.getElementById('filter-department').value = filters.department;
+                        renderTable();
+
+                        // Scroll to event details
+                        document.getElementById('event-details').scrollIntoView({{ behavior: 'smooth' }});
+                    }}
+                }}
+            }}
+        }});
+        }}
+
+        // ===== PII/PHI Insights & Charts =====
+
+        // Populate PII Insights Block (defensive)
+        function populatePIIInsights() {{
+            const piiBlock = document.getElementById('pii-insights');
+            if (!piiBlock) return;
+
+            const summary = window.SHADOW_AI_SUMMARY || {{}};
+            const kpis = summary.kpis || {{}};
+            const piiCount = typeof kpis.pii_events_count === 'number' ? kpis.pii_events_count : 0;
+            const piiPct = typeof kpis.pii_events_percentage === 'number' ? kpis.pii_events_percentage : 0;
+            const piiByDept = summary.pii_events_by_department || {{}};
+            const deptNames = Object.keys(piiByDept);
+
+            let html = '<h2>Potential Sensitive Data Exposure</h2>';
+
+            if (piiCount === 0) {{
+                html += '<p>We did not detect any events that match patterns consistent with PII/PHI being sent to AI tools in this log sample.</p>';
+            }} else {{
+                const pctText = piiPct ? ` (~${{piiPct.toFixed(1)}}% of AI events)` : '';
+                html += `<p>We detected ${{piiCount}} events${{pctText}} that match patterns consistent with sending documents, records, or personal data to external AI tools.</p>`;
+                html += '<ul>';
+
+                // Top departments with PII risk
+                const topDepts = deptNames
+                    .sort((a, b) => (piiByDept[b] || 0) - (piiByDept[a] || 0))
+                    .slice(0, 3);
+
+                if (topDepts.length > 0) {{
+                    const deptNamesText = topDepts.join(', ');
+                    html += `<li>Most potential exposure is concentrated in ${{deptNamesText}}.</li>`;
+                }}
+
+                html += '<li>Patterns include large uploads, document-like URLs (e.g., "patient", "claim", "record"), and unknown AI tools.</li>';
+                html += '<li>These are heuristic flags based on network-level data – further investigation recommended.</li>';
+                html += '</ul>';
+            }}
+
+            piiBlock.innerHTML = html;
+        }}
+
+        // Initialize PII by Department Chart (defensive)
+        function initPIIDeptChart() {{
+            const chartSection = document.getElementById('pii-chart-section');
+            const chartCanvas = document.getElementById('piiDeptChart');
+
+            if (!chartCanvas) return;
+
+            const summary = window.SHADOW_AI_SUMMARY || {{}};
+            const kpis = summary.kpis || {{}};
+            const piiCount = typeof kpis.pii_events_count === 'number' ? kpis.pii_events_count : 0;
+            const piiByDept = summary.pii_events_by_department || {{}};
+
+            if (piiCount === 0 || Object.keys(piiByDept).length === 0) {{
+                if (chartSection) chartSection.style.display = 'none';
+                return;
+            }}
+
+            const piiDeptLabels = Object.keys(piiByDept);
+            const piiDeptValues = Object.values(piiByDept);
+
+            const piiDeptCtx = chartCanvas.getContext('2d');
+            new Chart(piiDeptCtx, {{
+                type: 'bar',
+                data: {{
+                    labels: piiDeptLabels,
+                    datasets: [{{
+                        label: 'PII/PHI-Risky Events',
+                        data: piiDeptValues,
+                        backgroundColor: '#f59e0b',
+                        borderRadius: 4
+                    }}]
+                }},
+                options: {{
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {{
+                        legend: {{ display: false }}
+                    }},
+                    scales: {{
+                        y: {{
+                            beginAtZero: true,
+                            ticks: {{ stepSize: 1 }}
+                        }}
+                    }}
+                }}
+            }});
+        }}
+
+        // Initialize Use Case Chart (defensive)
+        function initUseCaseChart() {{
+            const chartCanvas = document.getElementById('useCaseChart');
+            if (!chartCanvas) return;
+
+            const summary = window.SHADOW_AI_SUMMARY || {{}};
+            const useCaseData = summary.events_by_use_case || {{}};
+
+            if (Object.keys(useCaseData).length === 0) {{
+                return;
+            }}
+
+            const useCaseLabels = Object.keys(useCaseData).map(uc => {{
+                // Convert to display names
+                return uc.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+            }});
+            const useCaseValues = Object.values(useCaseData);
+
+            const useCaseCtx = chartCanvas.getContext('2d');
+            new Chart(useCaseCtx, {{
+                type: 'doughnut',
+                data: {{
+                    labels: useCaseLabels,
+                    datasets: [{{
+                        data: useCaseValues,
+                        backgroundColor: ['#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#6b7280'],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }}]
+                }},
+                options: {{
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {{
+                        legend: {{
+                            position: 'bottom',
+                            labels: {{ font: {{ size: 14 }}, padding: 15 }}
+                        }}
+                    }}
+                }}
+            }});
+        }}
+
+        // Populate Insight Cards (defensive)
+        function populateInsightCards() {{
+            const summary = window.SHADOW_AI_SUMMARY || {{}};
+            const kpis = summary.kpis || {{}};
+            const piiByDept = summary.pii_events_by_department || {{}};
+            const useCases = summary.events_by_use_case || {{}};
+
+            // Insight 1: Sensitive teams uploading documents
+            const insight1 = document.getElementById('insight-1');
+            if (insight1) {{
+                const highSensitiveDepts = ['Clinical', 'Claims', 'Legal', 'Trading', 'Underwriting', 'Wealth Management'];
+                const hasHighSensitiveInPII = Object.keys(piiByDept).some(d => highSensitiveDepts.includes(d));
+                const piiCount = typeof kpis.pii_events_count === 'number' ? kpis.pii_events_count : 0;
+
+                if (piiCount > 0 && hasHighSensitiveInPII) {{
+                    const sortedDepts = Object.entries(piiByDept).sort((a, b) => b[1] - a[1]);
+                    const topDept = sortedDepts.length > 0 ? sortedDepts[0] : null;
+                    const deptName = topDept ? topDept[0] : 'sensitive departments';
+                    insight1.innerHTML = `
+                        <h3>Sensitive teams are uploading documents to AI tools</h3>
+                        <p>High-sensitivity departments like ${{deptName}} show patterns consistent with sending documents or records to AI providers. This creates risk of regulated data exposure (HIPAA, PII, financial records). These teams need immediate guidance on approved alternatives.</p>
+                    `;
+                }} else {{
+                    insight1.innerHTML = `
+                        <h3>Limited PII/PHI risk detected</h3>
+                        <p>This sample shows minimal patterns consistent with sensitive data exposure. However, continued monitoring is essential as AI usage evolves.</p>
+                    `;
+                }}
+            }}
+
+            // Insight 2: Shadow AI adoption
+            const insight2 = document.getElementById('insight-2');
+            if (insight2) {{
+                const shadowPct = typeof kpis.shadow_ai_percentage === 'number' ? kpis.shadow_ai_percentage : 0;
+                insight2.innerHTML = `
+                    <h3>High usage of unsanctioned AI tools</h3>
+                    <p>Approximately ${{shadowPct}}% of AI activity goes to external tools like ChatGPT web, Claude web, and unknown AI services. This indicates employees are finding AI valuable but lack sanctioned alternatives, creating inconsistent processes and uncontrolled risk.</p>
+                `;
+            }}
+
+            // Insight 3: Top AI use cases
+            const insight3 = document.getElementById('insight-3');
+            if (insight3) {{
+                const sortedUseCases = Object.entries(useCases).sort((a, b) => b[1] - a[1]);
+                if (sortedUseCases.length > 0) {{
+                    const topUseCase = sortedUseCases[0][0];
+                    const useCaseDisplay = topUseCase.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                    insight3.innerHTML = `
+                        <h3>AI is primarily used for ${{useCaseDisplay}}</h3>
+                        <p>The dominant AI use case is ${{useCaseDisplay.toLowerCase()}}, indicating employees are seeking automation for knowledge work. This presents an opportunity to enable these workflows safely with governed tools and processes.</p>
+                    `;
+                }} else {{
+                    insight3.innerHTML = `
+                        <h3>Diverse AI usage patterns</h3>
+                        <p>AI usage spans multiple use cases without a clear dominant pattern. This suggests exploratory adoption across different teams and workflows.</p>
+                    `;
+                }}
+            }}
+        }}
+
+        // Populate Chart Captions (defensive)
+        function populateChartCaptions() {{
+            const summary = window.SHADOW_AI_SUMMARY || {{}};
+            const riskCounts = summary.risk_counts || {{}};
+            const low = typeof riskCounts.low === 'number' ? riskCounts.low : 0;
+            const medium = typeof riskCounts.medium === 'number' ? riskCounts.medium : 0;
+            const high = typeof riskCounts.high === 'number' ? riskCounts.high : 0;
+            const totalEvents = low + medium + high;
+            const highPct = totalEvents > 0 ? Math.round((high / totalEvents) * 100) : 0;
+
+            // Risk chart caption
+            const riskCaption = document.getElementById('risk-chart-caption');
+            if (riskCaption) {{
+                if (highPct > 20) {{
+                    riskCaption.textContent = 'A significant portion of AI activity is high or medium risk, driven by sensitive teams and large data transfers.';
+                }} else {{
+                    riskCaption.textContent = 'Most detected AI activity appears low risk in this dataset, but Shadow AI usage still requires monitoring.';
+                }}
+            }}
+
+            // Department chart caption
+            const deptCaption = document.getElementById('dept-chart-caption');
+            if (deptCaption) {{
+                const eventsByDept = summary.events_by_department || {{}};
+                const topDepts = Object.entries(eventsByDept).sort((a, b) => b[1] - a[1]).slice(0, 2);
+                if (topDepts.length > 0) {{
+                    const deptNames = topDepts.map(d => d[0]).join(' and ');
+                    deptCaption.textContent = `AI usage is concentrated in ${{deptNames}}, indicating emerging AI workflows in these areas.`;
+                }}
+            }}
+
+            // Use case chart caption
+            const useCaseCaption = document.getElementById('usecase-chart-caption');
+            if (useCaseCaption) {{
+                const useCases = summary.events_by_use_case || {{}};
+                const topUseCases = Object.entries(useCases).sort((a, b) => b[1] - a[1]).slice(0, 2);
+                if (topUseCases.length > 0) {{
+                    const useCaseNames = topUseCases.map(u => u[0].split('_').join(' ')).join(' and ');
+                    useCaseCaption.textContent = `Most AI usage is focused on ${{useCaseNames}}, signaling early automation of knowledge work.`;
+                }}
+            }}
+        }}
+
+        // ===== Event Filtering and Table Rendering =====
+
+        // Global filters state
+        const filters = {{
+            risk: 'all',
+            department: 'all',
+            provider: 'all',
+            piiOnly: false,
+            search: ''
+        }};
+
+        // Initialize filter dropdowns
+        function initializeFilters() {{
+            // Get unique departments and providers (defensive)
+            const events = window.SHADOW_AI_EVENTS || [];
+            const departments = new Set();
+            const providers = new Set();
+
+            events.forEach(event => {{
+                if (event.department) departments.add(event.department);
+                if (event.provider) providers.add(event.provider);
+            }});
+
+            // Populate department dropdown
+            const deptSelect = document.getElementById('filter-department');
+            Array.from(departments).sort().forEach(dept => {{
+                const option = document.createElement('option');
+                option.value = dept;
+                option.textContent = dept;
+                deptSelect.appendChild(option);
+            }});
+
+            // Populate provider dropdown
+            const providerSelect = document.getElementById('filter-provider');
+            Array.from(providers).sort().forEach(provider => {{
+                const option = document.createElement('option');
+                option.value = provider;
+                option.textContent = provider.charAt(0).toUpperCase() + provider.slice(1);
+                providerSelect.appendChild(option);
+            }});
+        }}
+
+        // Filter events based on current filter state (defensive)
+        function filterEvents() {{
+            const events = window.SHADOW_AI_EVENTS || [];
+            return events.filter(event => {{
+                // Risk filter
+                if (filters.risk !== 'all' && event.risk_level !== filters.risk) {{
+                    return false;
+                }}
+
+                // Department filter
+                if (filters.department !== 'all' && event.department !== filters.department) {{
+                    return false;
+                }}
+
+                // Provider filter
+                if (filters.provider !== 'all' && event.provider !== filters.provider) {{
+                    return false;
+                }}
+
+                // Search filter (case-insensitive)
+                if (filters.search) {{
+                    const searchLower = filters.search.toLowerCase();
+                    const searchableText = [
+                        event.user_email || '',
+                        event.department || '',
+                        event.provider || '',
+                        event.url || ''
+                    ].join(' ').toLowerCase();
+
+                    if (!searchableText.includes(searchLower)) {{
+                        return false;
+                    }}
+                }}
+
+                // PII-only filter
+                if (filters.piiOnly && !event.pii_risk) {{
+                    return false;
+                }}
+
+                return true;
+            }});
+        }}
+
+        // Format timestamp for display
+        function formatTime(timestamp) {{
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString('en-US', {{
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            }});
+        }}
+
+        // Generate event summary text
+        function generateEventSummary(event) {{
+            const dept = event.department || 'Unknown dept';
+            const user = event.user_email || 'Unknown user';
+            const provider = event.provider.charAt(0).toUpperCase() + event.provider.slice(1);
+            const service = event.service.replace('_', ' ');
+            const bytesSent = event.bytes_sent ? `${{(event.bytes_sent / 1024).toFixed(1)}} KB sent` : 'N/A';
+            const risk = event.risk_level.charAt(0).toUpperCase() + event.risk_level.slice(1);
+
+            return `${{dept}} user ${{user}} used ${{provider}} ${{service}} (${{bytesSent}}) – ${{risk}} Risk`;
+        }}
+
+        // Render table with filtered events
+        function renderTable() {{
+            const tbody = document.getElementById('event-table-body');
+            const filteredEvents = filterEvents();
+
+            // Limit to 50 rows
+            const displayEvents = filteredEvents.slice(0, 50);
+
+            // Clear existing rows
+            tbody.innerHTML = '';
+
+            if (displayEvents.length === 0) {{
+                const row = tbody.insertRow();
+                const cell = row.insertCell();
+                cell.colSpan = 6;
+                cell.textContent = 'No events match the current filters.';
+                cell.style.textAlign = 'center';
+                cell.style.padding = '20px';
+                cell.style.color = '#6b7280';
+                return;
+            }}
+
+            // Render rows
+            displayEvents.forEach(event => {{
+                const row = tbody.insertRow();
+                row.dataset.eventId = event.id;
+                row.onclick = () => showEventModal(event.id);
+
+                // Time
+                const timeCell = row.insertCell();
+                timeCell.textContent = formatTime(event.timestamp);
+
+                // User
+                const userCell = row.insertCell();
+                userCell.textContent = event.user_email || 'N/A';
+
+                // Department
+                const deptCell = row.insertCell();
+                deptCell.textContent = event.department || 'N/A';
+
+                // Provider
+                const providerCell = row.insertCell();
+                providerCell.textContent = event.provider.charAt(0).toUpperCase() + event.provider.slice(1);
+
+                // Risk
+                const riskCell = row.insertCell();
+                const riskBadge = document.createElement('span');
+                riskBadge.className = `risk-badge ${{event.risk_level}}`;
+                riskBadge.textContent = event.risk_level.toUpperCase();
+                riskCell.appendChild(riskBadge);
+
+                // Summary
+                const summaryCell = row.insertCell();
+                summaryCell.textContent = generateEventSummary(event);
+            }});
+        }}
+
+        // ===== Event Detail Modal =====
+
+        // Risk reason explanations
+        const riskReasonExplanations = {{
+            'high_sensitivity_department': 'Department is classified as high-sensitivity (Clinical/Claims/Legal/Trading/Underwriting/Wealth Management).',
+            'large_data_transfer': 'Large payload suggests full documents or records may be sent.',
+            'unknown_ai_provider': 'This is an unknown AI provider outside your sanctioned tools.',
+            'medium_sensitivity_department': 'Department handles moderately sensitive information (Finance/HR).',
+            'external_ai_usage': 'External AI tool usage without governance.',
+            'low_risk_ai_usage': 'Standard AI usage with lower risk profile.'
+        }};
+
+        // Generate follow-up recommendations based on risk level
+        function getFollowUpRecommendations(riskLevel) {{
+            switch (riskLevel) {{
+                case 'high':
+                    return [
+                        'Confirm whether sensitive/regulated data is being shared.',
+                        'Discuss this usage with the department lead and evaluate safer alternatives.',
+                        'Consider implementing immediate access controls or restrictions.'
+                    ];
+                case 'medium':
+                    return [
+                        'Review usage with the team and align with policy.',
+                        'Ensure proper training on acceptable AI usage guidelines.'
+                    ];
+                case 'low':
+                    return [
+                        'Consider adding this to the sanctioned toolkit if appropriate.',
+                        'Monitor for any changes in usage patterns.'
+                    ];
+                default:
+                    return ['Review with IT security team.'];
+            }}
+        }}
+
+        // Show event detail modal
+        function showEventModal(eventId) {{
+            const event = SHADOW_AI_EVENTS.find(e => e.id === eventId);
+            if (!event) return;
+
+            const modal = document.getElementById('event-modal');
+            const modalBody = document.getElementById('event-modal-body');
+
+            // Build modal content
+            let html = `
+                <div class="event-detail-section">
+                    <div class="event-detail-label">Timestamp</div>
+                    <div class="event-detail-value">${{new Date(event.timestamp).toLocaleString()}}</div>
+                </div>
+
+                <div class="event-detail-section">
+                    <div class="event-detail-label">User</div>
+                    <div class="event-detail-value">${{event.user_email || 'N/A'}}</div>
+                </div>
+
+                <div class="event-detail-section">
+                    <div class="event-detail-label">Department</div>
+                    <div class="event-detail-value">${{event.department || 'N/A'}}</div>
+                </div>
+
+                <div class="event-detail-section">
+                    <div class="event-detail-label">Provider & Service</div>
+                    <div class="event-detail-value">
+                        ${{event.provider.charAt(0).toUpperCase() + event.provider.slice(1)}}
+                        (${{event.service.replace('_', ' ')}})
+                    </div>
+                </div>
+
+                <div class="event-detail-section">
+                    <div class="event-detail-label">URL</div>
+                    <div class="event-detail-value">${{truncateUrl(event.url, 80)}}</div>
+                </div>
+
+                <div class="event-detail-section">
+                    <div class="event-detail-label">Data Transfer</div>
+                    <div class="event-detail-value">
+                        Sent: ${{event.bytes_sent ? (event.bytes_sent / 1024).toFixed(2) + ' KB' : 'N/A'}} |
+                        Received: ${{event.bytes_received ? (event.bytes_received / 1024).toFixed(2) + ' KB' : 'N/A'}}
+                    </div>
+                </div>
+
+                <div class="event-detail-section">
+                    <div class="event-detail-label">Risk Level</div>
+                    <div class="event-detail-value">
+                        <span class="risk-badge ${{event.risk_level}}">${{event.risk_level.toUpperCase()}}</span>
+                    </div>
+                </div>
+
+                <div class="event-detail-section">
+                    <div class="event-detail-label">Risk Factors</div>
+                    <ul class="risk-reasons-list">
+                        ${{event.risk_reasons.map(reason =>
+                            `<li>${{riskReasonExplanations[reason] || reason}}</li>`
+                        ).join('')}}
+                    </ul>
+                </div>
+
+                <div class="event-detail-section">
+                    <div class="event-detail-label">Recommended Follow-up</div>
+                    <ul class="follow-up-list">
+                        ${{getFollowUpRecommendations(event.risk_level).map(rec =>
+                            `<li>${{rec}}</li>`
+                        ).join('')}}
+                    </ul>
+                </div>
+            `;
+
+            modalBody.innerHTML = html;
+            modal.classList.add('show');
+        }}
+
+        // Close modal
+        function closeModal() {{
+            const modal = document.getElementById('event-modal');
+            modal.classList.remove('show');
+        }}
+
+        // Truncate URL for display
+        function truncateUrl(url, maxLength) {{
+            if (url.length <= maxLength) return url;
+            return url.substring(0, maxLength) + '...';
+        }}
+
+        // ===== Event Listeners =====
+
+        // Filter change listeners
+        document.getElementById('filter-risk').addEventListener('change', (e) => {{
+            filters.risk = e.target.value;
+            renderTable();
+        }});
+
+        document.getElementById('filter-department').addEventListener('change', (e) => {{
+            filters.department = e.target.value;
+            renderTable();
+        }});
+
+        document.getElementById('filter-provider').addEventListener('change', (e) => {{
+            filters.provider = e.target.value;
+            renderTable();
+        }});
+
+        document.getElementById('filter-search').addEventListener('input', (e) => {{
+            filters.search = e.target.value;
+            renderTable();
+        }});
+
+        document.getElementById('filter-pii-only').addEventListener('change', (e) => {{
+            filters.piiOnly = e.target.checked;
+            renderTable();
+        }});
+
+        // Modal close listeners
+        document.getElementById('event-modal-close').addEventListener('click', closeModal);
+        document.getElementById('event-modal').addEventListener('click', (e) => {{
+            if (e.target.id === 'event-modal') {{
+                closeModal();
+            }}
+        }});
+    </script>
+
+    <script>
+        // ===== Initialize Dashboard on DOM Load =====
+        document.addEventListener('DOMContentLoaded', () => {{
+            // Initialize main charts
+            initRiskChart();
+            initDeptChart();
+
+            // Initialize PII/PHI insights and charts
+            populatePIIInsights();
+            initPIIDeptChart();
+            initUseCaseChart();
+
+            // Populate insight cards and captions
+            populateInsightCards();
+            populateChartCaptions();
+
+            // Initialize event table
+            initializeFilters();
+            renderTable();
+        }});
+    </script>
+</body>
+</html>"""
+
+    return html
+
+
+def _render_risk_card(risk: Dict[str, str]) -> str:
+    """Render a single risk card."""
+    return f"""
+                    <div class="risk-card">
+                        <div class="risk-card-title">{risk.get('title', 'Unknown Risk')}</div>
+                        <div class="risk-card-description">{risk.get('description', '')}</div>
+                        <div class="risk-card-next-step">
+                            <strong>Next Step:</strong> {risk.get('suggested_next_step', '')}
+                        </div>
+                    </div>"""
