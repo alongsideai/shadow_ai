@@ -7,7 +7,11 @@
     "high_risk_events": 8,
     "high_risk_percentage": 40.0,
     "pii_events_count": 7,
-    "pii_events_percentage": 35.0
+    "pii_events_percentage": 35.0,
+    "enriched_events_count": 3,
+    "enriched_events_percentage": 15.0,
+    "total_minutes_saved": 45,
+    "total_hours_saved": 0.8
   },
   "risk_counts": {
     "low": 0,
@@ -114,5 +118,15 @@
       "suggested_next_step": "Implement DLP controls and train employees on data handling policies."
     }
   ],
-  "shadow_ai_profile": "Most AI usage is in Engineering (20%) and Clinical (15%). About 100.0% of all AI events go to unsanctioned or unknown AI tools."
+  "shadow_ai_profile": "Most AI usage is in Engineering (20%) and Clinical (15%). About 100.0% of all AI events go to unsanctioned or unknown AI tools.",
+  "value_enrichment": {
+    "enriched_count": 3,
+    "total_minutes_saved": 45,
+    "total_hours_saved": 0.8,
+    "value_category_counts": {
+      "Productivity": 2,
+      "Unknown": 1
+    },
+    "average_minutes_per_event": 15.0
+  }
 }

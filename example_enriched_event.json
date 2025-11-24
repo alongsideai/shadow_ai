@@ -1,0 +1,50 @@
+{
+  "description": "Example of an AI usage event with value enrichment",
+
+  "raw_event": {
+    "id": "evt_20241124_143022_8f3a",
+    "timestamp": "2024-11-24T14:30:22Z",
+    "user_email": "sarah.chen@company.com",
+    "department": "Marketing",
+    "source_ip": "192.168.1.45",
+    "provider": "openai",
+    "service": "chat",
+    "url": "https://api.openai.com/v1/chat/completions",
+    "bytes_sent": 4523,
+    "bytes_received": 1892,
+    "risk_level": "medium",
+    "risk_reasons": [
+      "shadow_ai_tool",
+      "large_data_transfer"
+    ],
+    "source_system": "network_logs_v1",
+    "pii_risk": false,
+    "pii_reasons": [],
+    "use_case": "content_generation"
+  },
+
+  "value_enrichment": {
+    "value_category": "Revenue",
+    "estimated_minutes_saved": 12,
+    "business_outcome": "Faster creation of marketing campaign email draft",
+    "department": "Marketing",
+    "risk_level": "Low",
+    "policy_alignment": "Questionable",
+    "summary": "Marketing team member used ChatGPT to draft a campaign email, saving approximately 12 minutes. Moderate governance concern as the tool is unsanctioned, but no sensitive data appears to be involved.",
+    "created_at": "2024-11-24T14:35:18Z"
+  },
+
+  "insights": {
+    "time_value_calculation": {
+      "minutes_saved": 12,
+      "assumed_hourly_rate_usd": 50,
+      "estimated_dollar_value": 10.0,
+      "formula": "(12 minutes / 60) * $50/hour = $10.00"
+    },
+    "governance_assessment": {
+      "risk_level": "Low",
+      "policy_alignment": "Questionable",
+      "recommendation": "Provide approved alternative (e.g., Microsoft Copilot) to reduce shadow AI while maintaining productivity gains"
+    }
+  }
+}

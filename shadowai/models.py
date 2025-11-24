@@ -70,6 +70,12 @@ class AIUsageEvent:
     pii_reasons: list[str] = field(default_factory=list)
     # Use-case classification
     use_case: str = "unknown"
+    # Value enrichment fields (optional, populated by worker)
+    value_category: Optional[str] = None
+    estimated_minutes_saved: Optional[int] = None
+    business_outcome: Optional[str] = None
+    policy_alignment: Optional[str] = None
+    value_summary: Optional[str] = None
 
     def to_dict(self) -> dict:
         """Convert to dictionary for JSON serialization."""
@@ -90,5 +96,10 @@ class AIUsageEvent:
             "notes": self.notes,
             "pii_risk": self.pii_risk,
             "pii_reasons": self.pii_reasons,
-            "use_case": self.use_case
+            "use_case": self.use_case,
+            "value_category": self.value_category,
+            "estimated_minutes_saved": self.estimated_minutes_saved,
+            "business_outcome": self.business_outcome,
+            "policy_alignment": self.policy_alignment,
+            "value_summary": self.value_summary
         }

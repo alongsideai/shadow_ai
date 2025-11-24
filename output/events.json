@@ -21,7 +21,12 @@
     "pii_reasons": [
       "high_sensitivity_large_payload"
     ],
-    "use_case": "analysis_or_chat"
+    "use_case": "analysis_or_chat",
+    "value_category": null,
+    "estimated_minutes_saved": null,
+    "business_outcome": null,
+    "policy_alignment": null,
+    "value_summary": null
   },
   {
     "id": "evt_4de735ecfcfb",
@@ -42,7 +47,12 @@
     "notes": null,
     "pii_risk": false,
     "pii_reasons": [],
-    "use_case": "content_generation"
+    "use_case": "content_generation",
+    "value_category": null,
+    "estimated_minutes_saved": null,
+    "business_outcome": null,
+    "policy_alignment": null,
+    "value_summary": null
   },
   {
     "id": "evt_a179fda4607a",
@@ -66,7 +76,12 @@
     "pii_reasons": [
       "high_sensitivity_large_payload"
     ],
-    "use_case": "analysis_or_chat"
+    "use_case": "analysis_or_chat",
+    "value_category": null,
+    "estimated_minutes_saved": null,
+    "business_outcome": null,
+    "policy_alignment": null,
+    "value_summary": null
   },
   {
     "id": "evt_bad7e73b53c2",
@@ -87,7 +102,12 @@
     "notes": null,
     "pii_risk": false,
     "pii_reasons": [],
-    "use_case": "content_generation"
+    "use_case": "content_generation",
+    "value_category": null,
+    "estimated_minutes_saved": null,
+    "business_outcome": null,
+    "policy_alignment": null,
+    "value_summary": null
   },
   {
     "id": "evt_bceb8107f641",
@@ -111,7 +131,12 @@
     "pii_reasons": [
       "high_sensitivity_large_payload"
     ],
-    "use_case": "analysis_or_chat"
+    "use_case": "analysis_or_chat",
+    "value_category": null,
+    "estimated_minutes_saved": null,
+    "business_outcome": null,
+    "policy_alignment": null,
+    "value_summary": null
   },
   {
     "id": "evt_93f94ba7d758",
@@ -132,7 +157,12 @@
     "notes": null,
     "pii_risk": false,
     "pii_reasons": [],
-    "use_case": "code_assistance"
+    "use_case": "code_assistance",
+    "value_category": null,
+    "estimated_minutes_saved": null,
+    "business_outcome": null,
+    "policy_alignment": null,
+    "value_summary": null
   },
   {
     "id": "evt_d75f78813ff2",
@@ -153,7 +183,12 @@
     "notes": null,
     "pii_risk": false,
     "pii_reasons": [],
-    "use_case": "analysis_or_chat"
+    "use_case": "analysis_or_chat",
+    "value_category": null,
+    "estimated_minutes_saved": null,
+    "business_outcome": null,
+    "policy_alignment": null,
+    "value_summary": null
   },
   {
     "id": "evt_7f09f0252911",
@@ -174,7 +209,12 @@
     "notes": null,
     "pii_risk": false,
     "pii_reasons": [],
-    "use_case": "content_generation"
+    "use_case": "content_generation",
+    "value_category": null,
+    "estimated_minutes_saved": null,
+    "business_outcome": null,
+    "policy_alignment": null,
+    "value_summary": null
   },
   {
     "id": "evt_0d55895365a9",
@@ -195,7 +235,12 @@
     "notes": null,
     "pii_risk": false,
     "pii_reasons": [],
-    "use_case": "data_extraction"
+    "use_case": "data_extraction",
+    "value_category": null,
+    "estimated_minutes_saved": null,
+    "business_outcome": null,
+    "policy_alignment": null,
+    "value_summary": null
   },
   {
     "id": "evt_f3da1a7130d6",
@@ -216,7 +261,12 @@
     "notes": null,
     "pii_risk": false,
     "pii_reasons": [],
-    "use_case": "unknown"
+    "use_case": "unknown",
+    "value_category": null,
+    "estimated_minutes_saved": null,
+    "business_outcome": null,
+    "policy_alignment": null,
+    "value_summary": null
   },
   {
     "id": "evt_4248fec01d89",
@@ -239,7 +289,12 @@
     "pii_reasons": [
       "high_sensitivity_large_payload"
     ],
-    "use_case": "unknown"
+    "use_case": "unknown",
+    "value_category": null,
+    "estimated_minutes_saved": null,
+    "business_outcome": null,
+    "policy_alignment": null,
+    "value_summary": null
   },
   {
     "id": "evt_3f7a27f29f5c",
@@ -260,7 +315,12 @@
     "notes": null,
     "pii_risk": false,
     "pii_reasons": [],
-    "use_case": "analysis_or_chat"
+    "use_case": "analysis_or_chat",
+    "value_category": null,
+    "estimated_minutes_saved": null,
+    "business_outcome": null,
+    "policy_alignment": null,
+    "value_summary": null
   },
   {
     "id": "evt_fbc58c424ef2",
@@ -281,7 +341,12 @@
     "notes": null,
     "pii_risk": false,
     "pii_reasons": [],
-    "use_case": "content_generation"
+    "use_case": "content_generation",
+    "value_category": null,
+    "estimated_minutes_saved": null,
+    "business_outcome": null,
+    "policy_alignment": null,
+    "value_summary": null
   },
   {
     "id": "evt_a31152a6d1be",
@@ -305,7 +370,12 @@
     "pii_reasons": [
       "high_sensitivity_large_payload"
     ],
-    "use_case": "analysis_or_chat"
+    "use_case": "analysis_or_chat",
+    "value_category": null,
+    "estimated_minutes_saved": null,
+    "business_outcome": null,
+    "policy_alignment": null,
+    "value_summary": null
   },
   {
     "id": "evt_91b524b5dc87",
@@ -326,7 +396,12 @@
     "notes": null,
     "pii_risk": false,
     "pii_reasons": [],
-    "use_case": "analysis_or_chat"
+    "use_case": "analysis_or_chat",
+    "value_category": null,
+    "estimated_minutes_saved": null,
+    "business_outcome": null,
+    "policy_alignment": null,
+    "value_summary": null
   },
   {
     "id": "evt_c5fab4b9c4ab",
@@ -347,7 +422,12 @@
     "notes": null,
     "pii_risk": false,
     "pii_reasons": [],
-    "use_case": "content_generation"
+    "use_case": "content_generation",
+    "value_category": null,
+    "estimated_minutes_saved": null,
+    "business_outcome": null,
+    "policy_alignment": null,
+    "value_summary": null
   },
   {
     "id": "evt_83947c81960c",
@@ -371,7 +451,12 @@
     "pii_reasons": [
       "high_sensitivity_large_payload"
     ],
-    "use_case": "analysis_or_chat"
+    "use_case": "analysis_or_chat",
+    "value_category": null,
+    "estimated_minutes_saved": null,
+    "business_outcome": null,
+    "policy_alignment": null,
+    "value_summary": null
   },
   {
     "id": "evt_b7bf538d112a",
@@ -392,7 +477,12 @@
     "notes": null,
     "pii_risk": false,
     "pii_reasons": [],
-    "use_case": "content_generation"
+    "use_case": "content_generation",
+    "value_category": "Productivity",
+    "estimated_minutes_saved": 15,
+    "business_outcome": "Enhanced efficiency in sales processes through AI assistance.",
+    "policy_alignment": "Questionable",
+    "value_summary": "User accessed an external AI service to improve sales productivity."
   },
   {
     "id": "evt_7a03325d51df",
@@ -415,7 +505,12 @@
     "pii_reasons": [
       "high_sensitivity_large_payload"
     ],
-    "use_case": "unknown"
+    "use_case": "unknown",
+    "value_category": "Unknown",
+    "estimated_minutes_saved": 0,
+    "business_outcome": "Unknown due to lack of information on the AI service used.",
+    "policy_alignment": "Non-compliant",
+    "value_summary": "User accessed an unknown AI service that contains PII, raising high risk and compliance concerns."
   },
   {
     "id": "evt_9fe3c8c54a61",
@@ -436,6 +531,11 @@
     "notes": null,
     "pii_risk": false,
     "pii_reasons": [],
-    "use_case": "code_assistance"
+    "use_case": "code_assistance",
+    "value_category": "Productivity",
+    "estimated_minutes_saved": 30,
+    "business_outcome": "Increased efficiency in code development and faster project delivery.",
+    "policy_alignment": "Questionable",
+    "value_summary": "The user utilized GitHub Copilot for code completion, potentially enhancing productivity but raising concerns about external AI usage policies."
   }
 ]

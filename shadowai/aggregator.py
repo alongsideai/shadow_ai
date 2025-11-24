@@ -74,6 +74,12 @@ def aggregate_events(events: List[AIUsageEvent]) -> Dict[str, Any]:
         if e.risk_level == RiskLevel.HIGH.value
     )
 
+    # Value enrichment metrics
+    enriched_events = [e for e in events if e.value_category is not None]
+    total_minutes_saved = sum(e.estimated_minutes_saved for e in enriched_events if e.estimated_minutes_saved)
+    total_hours_saved = round(total_minutes_saved / 60, 1) if total_minutes_saved else 0
+    value_category_counts = Counter(e.value_category for e in enriched_events if e.value_category)
+
     # Top departments
     top_departments = department_counts.most_common(3)
 
@@ -113,7 +119,14 @@ def aggregate_events(events: List[AIUsageEvent]) -> Dict[str, Any]:
                 1
             ),
             "pii_events_count": pii_events_count,
-            "pii_events_percentage": round(pii_events_percentage, 1)
+            "pii_events_percentage": round(pii_events_percentage, 1),
+            "enriched_events_count": len(enriched_events),
+            "enriched_events_percentage": round(
+                (len(enriched_events) / total_events * 100) if total_events > 0 else 0,
+                1
+            ),
+            "total_minutes_saved": total_minutes_saved,
+            "total_hours_saved": total_hours_saved
         },
         "risk_counts": {
             "low": risk_counts.get(RiskLevel.LOW.value, 0),
@@ -137,7 +150,16 @@ def aggregate_events(events: List[AIUsageEvent]) -> Dict[str, Any]:
             for email, count in top_high_risk_users
         ],
         "top_risks": top_risks,
-        "shadow_ai_profile": shadow_ai_profile
+        "shadow_ai_profile": shadow_ai_profile,
+        "value_enrichment": {
+            "enriched_count": len(enriched_events),
+            "total_minutes_saved": total_minutes_saved,
+            "total_hours_saved": total_hours_saved,
+            "value_category_counts": dict(value_category_counts),
+            "average_minutes_per_event": round(
+                total_minutes_saved / len(enriched_events), 1
+            ) if enriched_events else 0
+        }
     }
 
     return summary
@@ -154,7 +176,11 @@ def _empty_summary() -> Dict[str, Any]:
             "high_risk_events": 0,
             "high_risk_percentage": 0,
             "pii_events_count": 0,
-            "pii_events_percentage": 0
+            "pii_events_percentage": 0,
+            "enriched_events_count": 0,
+            "enriched_events_percentage": 0,
+            "total_minutes_saved": 0,
+            "total_hours_saved": 0
         },
         "risk_counts": {"low": 0, "medium": 0, "high": 0},
         "events_by_provider": {},
@@ -168,7 +194,14 @@ def _empty_summary() -> Dict[str, Any]:
         "top_departments": [],
         "top_high_risk_users": [],
         "top_risks": [],
-        "shadow_ai_profile": "No AI usage detected."
+        "shadow_ai_profile": "No AI usage detected.",
+        "value_enrichment": {
+            "enriched_count": 0,
+            "total_minutes_saved": 0,
+            "total_hours_saved": 0,
+            "value_category_counts": {},
+            "average_minutes_per_event": 0
+        }
     }
 
 

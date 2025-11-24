@@ -4,879 +4,371 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shadow AI Scan Report</title>
+    <link rel="stylesheet" href="report.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 40px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            font-weight: 700;
-        }
-
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.95;
-            margin-bottom: 5px;
-        }
-
-        .header .date-range {
-            font-size: 0.9em;
-            opacity: 0.8;
-            margin-top: 10px;
-        }
-
-        .content {
-            padding: 40px;
-        }
-
-        .kpi-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
-        }
-
-        .kpi-card {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 25px;
-            border-left: 4px solid #667eea;
-        }
-
-        .kpi-card.high-risk {
-            border-left-color: #ef4444;
-        }
-
-        .kpi-card.shadow-ai {
-            border-left-color: #f59e0b;
-        }
-
-        .kpi-value {
-            font-size: 2.5em;
-            font-weight: 700;
-            color: #1f2937;
-            margin-bottom: 5px;
-        }
-
-        .kpi-label {
-            font-size: 0.95em;
-            color: #6b7280;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .kpi-description {
-            font-size: 0.85em;
-            color: #9ca3af;
-            margin-top: 8px;
-        }
-
-        .section {
-            margin-bottom: 40px;
-        }
-
-        .section-title {
-            font-size: 1.8em;
-            font-weight: 700;
-            color: #1f2937;
-            margin-bottom: 20px;
-            border-bottom: 3px solid #667eea;
-            padding-bottom: 10px;
-        }
-
-        .charts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 30px;
-            margin-bottom: 40px;
-        }
-
-        .chart-container {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 25px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .chart-title {
-            font-size: 1.2em;
-            font-weight: 600;
-            color: #1f2937;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .profile-box {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            border-radius: 8px;
-            padding: 25px;
-            margin-bottom: 40px;
-            border-left: 4px solid #f59e0b;
-        }
-
-        .profile-box p {
-            font-size: 1.1em;
-            color: #78350f;
-            line-height: 1.6;
-        }
-
-        .risk-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
-        }
-
-        .risk-card {
-            background: #fee;
-            border-radius: 8px;
-            padding: 25px;
-            border-left: 4px solid #ef4444;
-        }
-
-        .risk-card-title {
-            font-size: 1.3em;
-            font-weight: 700;
-            color: #991b1b;
-            margin-bottom: 12px;
-        }
-
-        .risk-card-description {
-            font-size: 1em;
-            color: #7f1d1d;
-            line-height: 1.6;
-            margin-bottom: 15px;
-        }
-
-        .risk-card-next-step {
-            font-size: 0.95em;
-            color: #dc2626;
-            font-weight: 600;
-            padding: 10px;
-            background: white;
-            border-radius: 6px;
-        }
-
-        .next-steps {
-            background: #eff6ff;
-            border-radius: 8px;
-            padding: 30px;
-            border-left: 4px solid #3b82f6;
-        }
-
-        .next-steps h3 {
-            font-size: 1.5em;
-            color: #1e40af;
-            margin-bottom: 15px;
-        }
-
-        .next-steps ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .next-steps li {
-            font-size: 1.05em;
-            color: #1e40af;
-            padding: 12px 0;
-            padding-left: 30px;
-            position: relative;
-            line-height: 1.6;
-        }
-
-        .next-steps li:before {
-            content: "→";
-            position: absolute;
-            left: 0;
-            font-weight: 700;
-            color: #3b82f6;
-        }
-
-        /* Event Table Styles */
-        .filters-bar {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            align-items: end;
-        }
-
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .filter-label {
-            font-size: 0.9em;
-            font-weight: 600;
-            color: #4b5563;
-        }
-
-        .filter-group select,
-        .filter-group input {
-            padding: 10px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 0.95em;
-            background: white;
-        }
-
-        .filter-group select:focus,
-        .filter-group input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .event-table-container {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 20px;
-            overflow-x: auto;
-        }
-
-        .event-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .event-table thead {
-            background: #667eea;
-            color: white;
-        }
-
-        .event-table th {
-            padding: 12px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 0.9em;
-        }
-
-        .event-table td {
-            padding: 12px;
-            border-bottom: 1px solid #e5e7eb;
-            font-size: 0.9em;
-        }
-
-        .event-table tbody tr {
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .event-table tbody tr:hover {
-            background-color: #f3f4f6;
-        }
-
-        .risk-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 0.85em;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .risk-badge.high {
-            background: #fee;
-            color: #dc2626;
-        }
-
-        .risk-badge.medium {
-            background: #fef3c7;
-            color: #d97706;
-        }
-
-        .risk-badge.low {
-            background: #d1fae5;
-            color: #059669;
-        }
-
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .modal.show {
-            display: flex;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 12px;
-            padding: 30px;
-            max-width: 700px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            position: relative;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: none;
-            border: none;
-            font-size: 2em;
-            color: #9ca3af;
-            cursor: pointer;
-            line-height: 1;
-            padding: 0;
-            width: 30px;
-            height: 30px;
-        }
-
-        .modal-close:hover {
-            color: #4b5563;
-        }
-
-        .modal-title {
-            font-size: 1.8em;
-            font-weight: 700;
-            color: #1f2937;
-            margin-bottom: 20px;
-            padding-right: 40px;
-        }
-
-        .modal-body {
-            color: #4b5563;
-            line-height: 1.6;
-        }
-
-        .event-detail-section {
-            margin-bottom: 20px;
-        }
-
-        .event-detail-label {
-            font-weight: 600;
-            color: #1f2937;
-            margin-bottom: 5px;
-        }
-
-        .event-detail-value {
-            color: #6b7280;
-            word-break: break-word;
-        }
-
-        .risk-reasons-list {
-            list-style: none;
-            padding: 0;
-            margin: 10px 0;
-        }
-
-        .risk-reasons-list li {
-            padding: 8px 12px;
-            background: #f3f4f6;
-            border-radius: 6px;
-            margin-bottom: 8px;
-            border-left: 3px solid #667eea;
-        }
-
-        .follow-up-list {
-            list-style: none;
-            padding: 0;
-            margin: 10px 0;
-        }
-
-        .follow-up-list li {
-            padding: 10px 12px;
-            background: #eff6ff;
-            border-radius: 6px;
-            margin-bottom: 8px;
-            padding-left: 30px;
-            position: relative;
-        }
-
-        .follow-up-list li:before {
-            content: "→";
-            position: absolute;
-            left: 10px;
-            color: #3b82f6;
-            font-weight: 700;
-        }
-
-        /* PII/PHI Risk Accent */
-        .kpi-card.pii-risk {
-            border-left-color: #f59e0b;
-            background: linear-gradient(135deg, #fef3c7 0%, #fef9e7 100%);
-        }
-
-        /* Insights Block */
-        .insights-block {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            border-radius: 8px;
-            padding: 25px;
-            margin-bottom: 30px;
-            border-left: 4px solid #f59e0b;
-        }
-
-        .insights-block h2 {
-            font-size: 1.5em;
-            font-weight: 700;
-            color: #78350f;
-            margin-bottom: 15px;
-        }
-
-        .insights-block p {
-            font-size: 1.05em;
-            color: #78350f;
-            line-height: 1.6;
-            margin-bottom: 12px;
-        }
-
-        .insights-block ul {
-            list-style: none;
-            padding: 0;
-            margin: 10px 0;
-        }
-
-        .insights-block ul li {
-            padding: 8px 0 8px 25px;
-            position: relative;
-            color: #78350f;
-            line-height: 1.6;
-        }
-
-        .insights-block ul li:before {
-            content: "⚠";
-            position: absolute;
-            left: 0;
-            color: #f59e0b;
-            font-weight: 700;
-        }
-
-        /* Insight Cards Grid */
-        .insights-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .insight-card {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 25px;
-            border-left: 4px solid #667eea;
-        }
-
-        .insight-card h3 {
-            font-size: 1.2em;
-            font-weight: 700;
-            color: #1f2937;
-            margin-bottom: 12px;
-        }
-
-        .insight-card p {
-            font-size: 0.95em;
-            color: #4b5563;
-            line-height: 1.6;
-        }
-
-        /* Chart Captions */
-        .chart-caption {
-            font-size: 0.9em;
-            color: #6b7280;
-            font-style: italic;
-            margin-top: 15px;
-            text-align: center;
-            line-height: 1.5;
-        }
-
-        /* Recommendations Section */
-        #recommendations {
-            background: #eff6ff;
-            border-radius: 8px;
-            padding: 30px;
-            border-left: 4px solid #3b82f6;
-            margin-top: 40px;
-        }
-
-        #recommendations h2 {
-            font-size: 1.8em;
-            font-weight: 700;
-            color: #1e40af;
-            margin-bottom: 20px;
-        }
-
-        #recommendations ol {
-            counter-reset: rec-counter;
-            list-style: none;
-            padding: 0;
-        }
-
-        #recommendations ol li {
-            counter-increment: rec-counter;
-            padding: 20px;
-            margin-bottom: 15px;
-            background: white;
-            border-radius: 6px;
-            position: relative;
-            padding-left: 60px;
-        }
-
-        #recommendations ol li:before {
-            content: counter(rec-counter);
-            position: absolute;
-            left: 20px;
-            top: 20px;
-            width: 30px;
-            height: 30px;
-            background: #3b82f6;
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 1.1em;
-        }
-
-        #recommendations ol li strong {
-            display: block;
-            font-size: 1.1em;
-            color: #1e40af;
-            margin-bottom: 8px;
-        }
-
-        #recommendations ol li p {
-            color: #4b5563;
-            line-height: 1.6;
-            margin: 0;
-        }
-
-        /* Filter Checkbox */
-        .filter-checkbox {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px;
-            background: white;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9em;
-            color: #4b5563;
-        }
-
-        .filter-checkbox input[type="checkbox"] {
-            cursor: pointer;
-            width: 18px;
-            height: 18px;
-        }
-
-        .filter-checkbox:hover {
-            background: #f3f4f6;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                border-radius: 0;
-            }
-
-            .header h1 {
-                font-size: 1.8em;
-            }
-
-            .content {
-                padding: 20px;
-            }
-
-            .kpi-grid,
-            .charts-grid,
-            .risk-cards {
-                grid-template-columns: 1fr;
-            }
-
-            .filters-bar {
-                grid-template-columns: 1fr;
-            }
-
-            .event-table {
-                font-size: 0.8em;
-            }
-        }
-    </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Shadow AI Scan Report</h1>
-            <p>Snapshot of AI usage across your organization</p>
-            <div class="date-range">
-                Log coverage: 2025-11-24T09:15:32 to 2025-11-24T14:35:42
-            </div>
-        </div>
+    <!-- Dashboard Container -->
+    <div class="dashboard-container">
 
-        <div class="content">
-            <!-- KPI Cards -->
-            <div class="kpi-grid">
-                <div class="kpi-card">
-                    <div class="kpi-value">20</div>
-                    <div class="kpi-label">Total AI Events</div>
-                    <div class="kpi-description">AI-related requests detected in network logs</div>
-                </div>
-
-                <div class="kpi-card">
-                    <div class="kpi-value">20</div>
-                    <div class="kpi-label">Unique Users Using AI</div>
-                    <div class="kpi-description">Individual employees accessing AI tools</div>
-                </div>
-
-                <div class="kpi-card shadow-ai">
-                    <div class="kpi-value">100.0%</div>
-                    <div class="kpi-label">Shadow AI Share</div>
-                    <div class="kpi-description">20 events to unsanctioned tools</div>
-                </div>
-
-                <div class="kpi-card high-risk">
-                    <div class="kpi-value">8</div>
-                    <div class="kpi-label">High-Risk Events</div>
-                    <div class="kpi-description">40.0% of total events</div>
-                </div>
-
-                <div class="kpi-card pii-risk">
-                    <div class="kpi-value">7</div>
-                    <div class="kpi-label">PII/PHI-Risky Events</div>
-                    <div class="kpi-description">Events where patterns suggest documents, records, or personal data may be sent to AI tools (approx. 35.0% of AI events)</div>
+        <!-- App Header -->
+        <header class="app-header">
+            <div class="app-header-left">
+                <div class="app-logo-mark">A</div>
+                <div class="app-header-text">
+                    <div class="app-product-name">Alongside AI</div>
+                    <div class="app-product-subtitle">Shadow AI Scan Report</div>
                 </div>
             </div>
+            <div class="app-header-right">
+                <div class="app-header-date">
+                    <span>Log coverage: 2025-11-24T09:15:32 to 2025-11-24T14:35:42</span>
+                </div>
+                <div class="risk-badge risk-badge-high">
+                    <span class="risk-badge-icon"></span>
+                    High Risk
+                </div>
+            </div>
+        </header>
 
-            <!-- Sensitive Data Exposure Insights -->
-            <div class="section">
-                <div class="insights-block" id="pii-insights">
+        <!-- ============================================================
+             EXECUTIVE VALUE BRIEFING (NEW TOP SECTION)
+             ============================================================ -->
+        <section id="exec-briefing" class="exec-briefing-section" style="display: none;">
+            <div class="exec-briefing-content">
+                <div class="exec-briefing-header">
+                    <h2 class="exec-briefing-title">Executive Value Briefing</h2>
+                    <p class="exec-briefing-subtitle">An executive summary of how your organization is using AI today — where it's creating value, where it isn't yet leveraged, and where risk is slowing adoption.</p>
+                </div>
+                <ul id="exec-headlines" class="exec-headlines">
                     <!-- Populated by JavaScript -->
+                </ul>
+            </div>
+        </section>
+
+        <!-- ============================================================
+             CONSOLIDATED KPI ROW (Value + Usage + Risk)
+             ============================================================ -->
+        <div id="exec-kpi-row" class="kpi-grid exec-kpi-grid" style="display: none;">
+            <div class="kpi-card primary">
+                <div class="kpi-card-header">
+                    <div class="kpi-icon">📊</div>
+                    <div class="kpi-label">Total AI Events</div>
                 </div>
+                <div id="exec-total-events" class="kpi-value">0</div>
+                <div id="exec-total-events-desc" class="kpi-description">Analyzed in this report</div>
             </div>
 
-            <!-- Shadow AI Profile -->
-            <div class="section">
-                <h2 class="section-title">Shadow AI Profile</h2>
-                <div class="profile-box">
-                    <p>Most AI usage is in Engineering (20%) and Clinical (15%). About 100.0% of all AI events go to unsanctioned or unknown AI tools.</p>
+            <div class="kpi-card primary exec-kpi-highlight">
+                <div class="kpi-card-header">
+                    <div class="kpi-icon">⏱️</div>
+                    <div class="kpi-label">Est. Hours Saved</div>
                 </div>
+                <div id="exec-hours-saved" class="kpi-value">0h</div>
+                <div id="exec-hours-saved-desc" class="kpi-description">Based on enriched events</div>
             </div>
 
-            <!-- Charts -->
-            <div class="section">
-                <h2 class="section-title">Usage Analytics</h2>
-                <div class="charts-grid">
-                    <div class="chart-container">
-                        <div class="chart-title">Risk Breakdown</div>
-                        <canvas id="riskChart"></canvas>
-                        <p id="risk-chart-caption" class="chart-caption"></p>
-                    </div>
-
-                    <div class="chart-container">
-                        <div class="chart-title">AI Usage by Department</div>
-                        <canvas id="deptChart"></canvas>
-                        <p id="dept-chart-caption" class="chart-caption"></p>
-                    </div>
+            <div class="kpi-card warning">
+                <div class="kpi-card-header">
+                    <div class="kpi-icon">💰</div>
+                    <div class="kpi-label">Revenue-Related Usage</div>
                 </div>
-
-                <!-- PII/PHI Risk by Department Chart -->
-                <div class="charts-grid" style="margin-top: 30px;" id="pii-chart-section">
-                    <div class="chart-container">
-                        <div class="chart-title">PII/PHI-Risky Events by Department</div>
-                        <canvas id="piiDeptChart"></canvas>
-                        <p class="chart-caption">Departments where employees may be sending documents or sensitive data to AI tools</p>
-                    </div>
-
-                    <div class="chart-container">
-                        <div class="chart-title">AI Use Case Breakdown</div>
-                        <canvas id="useCaseChart"></canvas>
-                        <p id="usecase-chart-caption" class="chart-caption"></p>
-                    </div>
-                </div>
+                <div id="exec-revenue-pct" class="kpi-value">0%</div>
+                <div id="exec-revenue-desc" class="kpi-description">Revenue & customer-facing work</div>
             </div>
 
-            <!-- Insights & Observations -->
-            <div class="section" id="insights-section">
-                <h2 class="section-title">Insights & Observations</h2>
-                <div class="insights-grid">
-                    <div class="insight-card" id="insight-1"></div>
-                    <div class="insight-card" id="insight-2"></div>
-                    <div class="insight-card" id="insight-3"></div>
+            <div class="kpi-card primary">
+                <div class="kpi-card-header">
+                    <div class="kpi-icon">🏢</div>
+                    <div class="kpi-label">Most Active Dept</div>
                 </div>
+                <div id="exec-top-dept" class="kpi-value">—</div>
+                <div id="exec-top-dept-desc" class="kpi-description">Highest AI usage volume</div>
             </div>
-
-            <!-- Top Risks -->
-            <div class="section">
-                <h2 class="section-title">Top 3 Risks</h2>
-                <div class="risk-cards">
-                    
-                    <div class="risk-card">
-                        <div class="risk-card-title">Clinical team using public AI tools</div>
-                        <div class="risk-card-description">Detected 3 high-risk AI events from the Clinical department. This department handles sensitive data that should not be processed by external AI systems.</div>
-                        <div class="risk-card-next-step">
-                            <strong>Next Step:</strong> Immediately review Clinical team's AI usage policies and provide approved alternatives.
-                        </div>
-                    </div>
-                    <div class="risk-card">
-                        <div class="risk-card-title">Unknown AI tools in use with no governance</div>
-                        <div class="risk-card-description">Found 2 events using unidentified AI services. These tools are outside IT visibility and may pose compliance risks.</div>
-                        <div class="risk-card-next-step">
-                            <strong>Next Step:</strong> Conduct an AI tool inventory and establish an approved vendor list.
-                        </div>
-                    </div>
-                    <div class="risk-card">
-                        <div class="risk-card-title">Significant data being sent to AI providers</div>
-                        <div class="risk-card-description">Detected 5 events with large data transfers (>4KB). This may indicate employees uploading documents or sensitive information.</div>
-                        <div class="risk-card-next-step">
-                            <strong>Next Step:</strong> Implement DLP controls and train employees on data handling policies.
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Next Steps -->
-            <div class="section">
-                <div class="next-steps">
-                    <h3>Recommended Next Steps</h3>
-                    <ul>
-                        <li>Run a full AI Risk &amp; Readiness Assessment based on these findings</li>
-                        <li>Define a sanctioned AI toolkit and usage policy for high-sensitivity teams</li>
-                        <li>Implement ongoing AI usage monitoring and governance</li>
-                        <li>Launch an AI enablement program to meet employee demand safely</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Event Details Section -->
-            <div class="section" id="event-details">
-                <h2 class="section-title">Event Details</h2>
-
-                <!-- Filters -->
-                <div class="filters-bar">
-                    <div class="filter-group">
-                        <label class="filter-label">Risk Level</label>
-                        <select id="filter-risk">
-                            <option value="all">All</option>
-                            <option value="high">High</option>
-                            <option value="medium">Medium</option>
-                            <option value="low">Low</option>
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label class="filter-label">Department</label>
-                        <select id="filter-department">
-                            <option value="all">All</option>
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label class="filter-label">Provider</label>
-                        <select id="filter-provider">
-                            <option value="all">All</option>
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label class="filter-label">Search</label>
-                        <input type="text" id="filter-search" placeholder="Search by user, dept, provider, URL...">
-                    </div>
-
-                    <div class="filter-group">
-                        <label class="filter-checkbox">
-                            <input type="checkbox" id="filter-pii-only">
-                            Show only events with potential PII/PHI risk
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Event Table -->
-                <div class="event-table-container">
-                    <table class="event-table">
-                        <thead>
-                            <tr>
-                                <th>Time</th>
-                                <th>User</th>
-                                <th>Department</th>
-                                <th>Provider</th>
-                                <th>Risk</th>
-                                <th>Summary</th>
-                            </tr>
-                        </thead>
-                        <tbody id="event-table-body">
-                            <!-- Populated by JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- What We Recommend Next -->
-            <section id="recommendations">
-                <h2>What We Recommend Next</h2>
-                <ol>
-                    <li>
-                        <strong>Run an AI Risk & Readiness Assessment (4–6 weeks)</strong>
-                        <p>Validate these findings, map your AI usage in detail, and identify where sensitive data and critical workflows are exposed.</p>
-                    </li>
-                    <li>
-                        <strong>Define a sanctioned AI toolkit and usage policy</strong>
-                        <p>Clarify which AI tools are approved, where they can be used, and how sensitive data should be handled.</p>
-                    </li>
-                    <li>
-                        <strong>Enable teams with governed, high-ROI AI workflows</strong>
-                        <p>Replace risky shadow usage with safe, production-ready AI workflows – supported by training, guardrails, and ongoing monitoring.</p>
-                    </li>
-                </ol>
-            </section>
         </div>
+
+        <!-- ============================================================
+             VALUE CATEGORY DISTRIBUTION (Prominent Chart)
+             ============================================================ -->
+        <section id="value-category-card" class="card-large value-chart-section" style="display: none;">
+            <div class="value-chart-header">
+                <h3 class="chart-title">Value Category Distribution</h3>
+                <p class="chart-subtitle">Breakdown of AI usage by value-aligned activity</p>
+            </div>
+            <div class="value-chart-container">
+                <canvas id="valueCategoryChart"></canvas>
+            </div>
+            <p id="value-chart-caption" class="chart-caption">Breakdown of AI usage by business value category</p>
+        </section>
+
+        <!-- ============================================================
+             THREE OPPORTUNITY + RISK INSIGHT CARDS (NEW)
+             ============================================================ -->
+        <div id="exec-insight-cards" class="exec-insights-grid" style="display: none;">
+            <div id="insight-value" class="exec-insight-card exec-insight-value">
+                <div class="exec-insight-icon">✨</div>
+                <h4 class="exec-insight-title">Where AI Creates Value</h4>
+                <p id="insight-value-text" class="exec-insight-text">Loading...</p>
+            </div>
+
+            <div id="insight-underutil" class="exec-insight-card exec-insight-underutil">
+                <div class="exec-insight-icon">📉</div>
+                <h4 class="exec-insight-title">Where AI Is Underutilized</h4>
+                <p id="insight-underutil-text" class="exec-insight-text">Loading...</p>
+            </div>
+
+            <div id="insight-risk" class="exec-insight-card exec-insight-risk">
+                <div class="exec-insight-icon">⚠️</div>
+                <h4 class="exec-insight-title">Where AI Causes Risk Drag</h4>
+                <p id="insight-risk-text" class="exec-insight-text">Loading...</p>
+            </div>
+        </div>
+
+        <!-- ============================================================
+             ORIGINAL KPI CARDS (Usage + Risk Summary)
+             ============================================================ -->
+        <div class="kpi-grid usage-risk-kpi-grid">
+            <div class="kpi-card primary">
+                <div class="kpi-card-header">
+                    <div class="kpi-icon">👥</div>
+                    <div class="kpi-label">Unique Users</div>
+                </div>
+                <div class="kpi-value">20</div>
+                <div class="kpi-description">Active AI users</div>
+            </div>
+
+            <div class="kpi-card warning">
+                <div class="kpi-card-header">
+                    <div class="kpi-icon">🛡</div>
+                    <div class="kpi-label">Shadow AI</div>
+                </div>
+                <div class="kpi-value">100.0%</div>
+                <div class="kpi-description">20 events to unsanctioned tools</div>
+            </div>
+
+            <div class="kpi-card danger">
+                <div class="kpi-card-header">
+                    <div class="kpi-icon">▲</div>
+                    <div class="kpi-label">High Risk Events</div>
+                </div>
+                <div class="kpi-value">8</div>
+                <div class="kpi-description">40.0% of total events</div>
+            </div>
+
+            <div class="kpi-card pii-risk">
+                <div class="kpi-card-header">
+                    <div class="kpi-icon">🔒</div>
+                    <div class="kpi-label">PII/PHI Risk Events</div>
+                </div>
+                <div class="kpi-value">7</div>
+                <div class="kpi-description">35.0% show sensitive data patterns</div>
+            </div>
+        </div>
+
+        <!-- PII/PHI Insights Block -->
+        <section id="pii-insights" class="insights-block mb-6">
+            <!-- Populated by JavaScript -->
+        </section>
+
+        <!-- Shadow AI Profile -->
+        <section class="glass-card mb-6">
+            <div class="section-header">
+                <h2 class="section-title">Shadow AI Profile</h2>
+            </div>
+            <p style="color: var(--text-secondary); line-height: 1.7;">Most AI usage is in Engineering (20%) and Clinical (15%). About 100.0% of all AI events go to unsanctioned or unknown AI tools.</p>
+        </section>
+
+        <!-- Charts Section -->
+        <section class="section-card mb-6">
+            <div class="section-header">
+                <h2 class="section-title">Usage Analytics</h2>
+                <p class="section-subtitle">Risk distribution, department activity, and use-case breakdown</p>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <h3 class="chart-title">Risk Level Breakdown</h3>
+                    <canvas id="riskChart"></canvas>
+                    <p id="risk-chart-caption" class="chart-caption"></p>
+                </div>
+
+                <div class="chart-container">
+                    <h3 class="chart-title">AI Usage by Department</h3>
+                    <canvas id="deptChart"></canvas>
+                    <p id="dept-chart-caption" class="chart-caption"></p>
+                </div>
+
+                <div id="pii-chart-section" class="chart-container">
+                    <h3 class="chart-title">PII/PHI Risk by Department</h3>
+                    <canvas id="piiDeptChart"></canvas>
+                    <p class="chart-caption">Departments where employees may be sending documents or sensitive data to AI tools</p>
+                </div>
+
+                <div class="chart-container">
+                    <h3 class="chart-title">Use Case Breakdown</h3>
+                    <canvas id="useCaseChart"></canvas>
+                    <p id="usecase-chart-caption" class="chart-caption"></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Insights & Observations -->
+        <section class="section-card mb-6">
+            <div class="section-header">
+                <h2 class="section-title">Insights & Observations</h2>
+                <p class="section-subtitle">Key patterns and concerns identified in AI usage</p>
+            </div>
+
+            <div class="insights-grid">
+                <div id="insight-1" class="insight-card"></div>
+                <div id="insight-2" class="insight-card"></div>
+                <div id="insight-3" class="insight-card"></div>
+            </div>
+        </section>
+
+        <!-- Top 3 Risks -->
+        <section class="section-card mb-6">
+            <div class="section-header">
+                <h2 class="section-title">Top 3 Risks Detected</h2>
+            </div>
+
+            <div class="risks-grid">
+                
+                <div class="risk-card">
+                    <div class="risk-card-title">Clinical team using public AI tools</div>
+                    <div class="risk-card-description">Detected 3 high-risk AI events from the Clinical department. This department handles sensitive data that should not be processed by external AI systems.</div>
+                    <div class="risk-card-action">
+                        <strong>Next Step:</strong> Immediately review Clinical team's AI usage policies and provide approved alternatives.
+                    </div>
+                </div>
+
+                <div class="risk-card">
+                    <div class="risk-card-title">Unknown AI tools in use with no governance</div>
+                    <div class="risk-card-description">Found 2 events using unidentified AI services. These tools are outside IT visibility and may pose compliance risks.</div>
+                    <div class="risk-card-action">
+                        <strong>Next Step:</strong> Conduct an AI tool inventory and establish an approved vendor list.
+                    </div>
+                </div>
+
+                <div class="risk-card">
+                    <div class="risk-card-title">Significant data being sent to AI providers</div>
+                    <div class="risk-card-description">Detected 5 events with large data transfers (>4KB). This may indicate employees uploading documents or sensitive information.</div>
+                    <div class="risk-card-action">
+                        <strong>Next Step:</strong> Implement DLP controls and train employees on data handling policies.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recommendations -->
+        <section id="recommendations" class="section-card recommendations mb-6">
+            <div class="section-header">
+                <h2 class="section-title">What We Recommend Next</h2>
+            </div>
+            <ol>
+                <li><strong>Run an AI Risk & Readiness Assessment</strong> with business & IT stakeholders to align on AI strategy, governance framework, and acceptable use policies.</li>
+                <li><strong>Deploy approved, secure AI tools</strong> (e.g., GitHub Copilot Enterprise, Microsoft Copilot for Microsoft 365, or an approved LLM with enterprise data controls) to give employees a sanctioned alternative.</li>
+                <li><strong>Implement Data Loss Prevention (DLP) controls</strong> to detect and block uploads of documents, code repos, or sensitive data to unapproved AI services.</li>
+                <li><strong>Provide AI literacy training</strong> to employees on prompt hygiene, data handling best practices, and what can/cannot be shared with AI tools.</li>
+                <li><strong>Establish continuous monitoring</strong> of AI tool usage to detect new shadow AI adoption, measure risk trends, and enforce governance policies.</li>
+            </ol>
+        </section>
+
+        <!-- Event Details Table -->
+        <section id="event-details" class="section-card table-wrapper events-section">
+            <div class="section-header-row">
+                <div>
+                    <h2 class="section-title">Event Details</h2>
+                    <p class="section-subtitle">All detected AI events with full context</p>
+                </div>
+                <button type="button" class="export-button event-export-button" onclick="exportEventsTable()">
+                    <span class="export-icon">📄</span>
+                    <span>Export Events</span>
+                </button>
+            </div>
+
+            <!-- Executive Summary for Export -->
+            <div class="events-executive-summary">
+                <h3>Executive Summary – Event Details</h3>
+                <p><strong>Total events:</strong> 20</p>
+                <p><strong>High-risk events:</strong> 8 (40.0%) | <strong>PII/PHI risk events:</strong> 7 (35.0%)</p>
+                <p><strong>Primary departments involved:</strong> Engineering, Clinical, Claims</p>
+            </div>
+
+            <!-- EXPORT SCOPE START -->
+            <div id="events-export-scope">
+                <!-- Filters Bar -->
+                <div class="filters-bar">
+                <div class="filter-group">
+                    <label class="filter-label">Risk Level</label>
+                    <select id="filter-risk">
+                        <option value="all">All Risk Levels</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Department</label>
+                    <select id="filter-department">
+                        <option value="all">All Departments</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Provider</label>
+                    <select id="filter-provider">
+                        <option value="all">All Providers</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Search</label>
+                    <input type="text" id="filter-search" placeholder="Search events...">
+                </div>
+
+                <label class="filter-checkbox">
+                    <input type="checkbox" id="filter-pii-only">
+                    Show only PII/PHI risk events
+                </label>
+            </div>
+
+            <!-- Table Container -->
+            <div class="table-container">
+                <table class="event-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>User</th>
+                            <th>Department</th>
+                            <th>Provider</th>
+                            <th>Risk</th>
+                            <th>PII Risk</th>
+                            <th>Value Category</th>
+                            <th>Est. Minutes Saved</th>
+                        </tr>
+                    </thead>
+                    <tbody id="event-table-body">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            </div>
+            <!-- EXPORT SCOPE END -->
+        </section>
+
     </div>
 
     <!-- Event Detail Modal -->
-    <div id="event-modal" class="modal">
-        <div class="modal-content">
-            <button id="event-modal-close" class="modal-close">&times;</button>
-            <h3 class="modal-title">Event Details</h3>
+    <div id="event-modal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title-row">
+                    <h2 class="modal-title">Event Details</h2>
+                    <div id="modal-header-info" class="modal-badges">
+                        <!-- Populated by JavaScript: timestamp, risk badge, PII badge -->
+                    </div>
+                </div>
+                <button id="event-modal-close" class="modal-close">×</button>
+            </div>
             <div id="event-modal-body" class="modal-body">
                 <!-- Populated by JavaScript -->
             </div>
@@ -885,8 +377,8 @@
 
     <script>
         // Embedded event and summary data
-        window.SHADOW_AI_EVENTS = [{"id": "evt_1f1761a20d5a", "timestamp": "2025-11-24T09:15:32", "user_email": "sarah.chen@company.com", "department": "Clinical", "source_ip": "192.168.1.45", "provider": "openai", "service": "chat", "url": "https://api.openai.com/v1/chat/completions", "bytes_sent": 5823, "bytes_received": 2145, "risk_level": "high", "risk_reasons": ["high_sensitivity_department", "large_data_transfer"], "source_system": "network_logs_v1", "notes": null, "pii_risk": true, "pii_reasons": ["high_sensitivity_large_payload"], "use_case": "analysis_or_chat"}, {"id": "evt_4de735ecfcfb", "timestamp": "2025-11-24T09:18:45", "user_email": "john.doe@company.com", "department": "Engineering", "source_ip": "192.168.1.67", "provider": "openai", "service": "web_ui", "url": "https://chat.openai.com/chat", "bytes_sent": 342, "bytes_received": 8721, "risk_level": "medium", "risk_reasons": ["external_ai_usage"], "source_system": "network_logs_v1", "notes": null, "pii_risk": false, "pii_reasons": [], "use_case": "content_generation"}, {"id": "evt_a179fda4607a", "timestamp": "2025-11-24T09:32:11", "user_email": "maria.garcia@company.com", "department": "Claims", "source_ip": "192.168.1.89", "provider": "anthropic", "service": "chat", "url": "https://api.anthropic.com/v1/messages", "bytes_sent": 6234, "bytes_received": 3456, "risk_level": "high", "risk_reasons": ["high_sensitivity_department", "large_data_transfer"], "source_system": "network_logs_v1", "notes": null, "pii_risk": true, "pii_reasons": ["high_sensitivity_large_payload"], "use_case": "analysis_or_chat"}, {"id": "evt_bad7e73b53c2", "timestamp": "2025-11-24T09:45:22", "user_email": "alex.wong@company.com", "department": "Finance", "source_ip": "192.168.1.102", "provider": "anthropic", "service": "web_ui", "url": "https://claude.ai/chat/new", "bytes_sent": 512, "bytes_received": 12456, "risk_level": "medium", "risk_reasons": ["medium_sensitivity_department"], "source_system": "network_logs_v1", "notes": null, "pii_risk": false, "pii_reasons": [], "use_case": "content_generation"}, {"id": "evt_bceb8107f641", "timestamp": "2025-11-24T10:03:18", "user_email": "emily.johnson@company.com", "department": "Legal", "source_ip": "192.168.1.123", "provider": "openai", "service": "chat", "url": "https://api.openai.com/v1/chat/completions", "bytes_sent": 8912, "bytes_received": 4567, "risk_level": "high", "risk_reasons": ["high_sensitivity_department", "large_data_transfer"], "source_system": "network_logs_v1", "notes": null, "pii_risk": true, "pii_reasons": ["high_sensitivity_large_payload"], "use_case": "analysis_or_chat"}, {"id": "evt_93f94ba7d758", "timestamp": "2025-11-24T10:15:44", "user_email": "david.kim@company.com", "department": "Engineering", "source_ip": "192.168.1.67", "provider": "github_copilot", "service": "code_assist", "url": "https://api.githubcopilot.com/completions", "bytes_sent": 1234, "bytes_received": 2345, "risk_level": "medium", "risk_reasons": ["external_ai_usage"], "source_system": "network_logs_v1", "notes": null, "pii_risk": false, "pii_reasons": [], "use_case": "code_assistance"}, {"id": "evt_d75f78813ff2", "timestamp": "2025-11-24T10:28:09", "user_email": "lisa.patel@company.com", "department": "HR", "source_ip": "192.168.1.134", "provider": "google", "service": "chat", "url": "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent", "bytes_sent": 2345, "bytes_received": 3456, "risk_level": "medium", "risk_reasons": ["medium_sensitivity_department"], "source_system": "network_logs_v1", "notes": null, "pii_risk": false, "pii_reasons": [], "use_case": "analysis_or_chat"}, {"id": "evt_7f09f0252911", "timestamp": "2025-11-24T10:42:33", "user_email": "michael.brown@company.com", "department": "Marketing", "source_ip": "192.168.1.156", "provider": "openai", "service": "web_ui", "url": "https://chat.openai.com/chat", "bytes_sent": 423, "bytes_received": 6789, "risk_level": "medium", "risk_reasons": ["external_ai_usage"], "source_system": "network_logs_v1", "notes": null, "pii_risk": false, "pii_reasons": [], "use_case": "content_generation"}, {"id": "evt_0d55895365a9", "timestamp": "2025-11-24T11:05:17", "user_email": "jennifer.lee@company.com", "department": "Clinical", "source_ip": "192.168.1.45", "provider": "openai", "service": "embeddings", "url": "https://api.openai.com/v1/embeddings", "bytes_sent": 3456, "bytes_received": 1234, "risk_level": "high", "risk_reasons": ["high_sensitivity_department"], "source_system": "network_logs_v1", "notes": null, "pii_risk": false, "pii_reasons": [], "use_case": "data_extraction"}, {"id": "evt_f3da1a7130d6", "timestamp": "2025-11-24T11:18:52", "user_email": "robert.martinez@company.com", "department": "Sales", "source_ip": "192.168.1.178", "provider": "perplexity", "service": "web_ui", "url": "https://perplexity.ai/search", "bytes_sent": 234, "bytes_received": 5678, "risk_level": "medium", "risk_reasons": ["external_ai_usage"], "source_system": "network_logs_v1", "notes": null, "pii_risk": false, "pii_reasons": [], "use_case": "unknown"}, {"id": "evt_4248fec01d89", "timestamp": "2025-11-24T11:33:28", "user_email": "amanda.taylor@company.com", "department": "Claims", "source_ip": "192.168.1.89", "provider": "unknown", "service": "unknown", "url": "https://unknown-ai-saas.com/api/generate", "bytes_sent": 4567, "bytes_received": 2345, "risk_level": "high", "risk_reasons": ["unknown_ai_provider"], "source_system": "network_logs_v1", "notes": null, "pii_risk": true, "pii_reasons": ["high_sensitivity_large_payload"], "use_case": "unknown"}, {"id": "evt_3f7a27f29f5c", "timestamp": "2025-11-24T11:47:41", "user_email": "christopher.white@company.com", "department": "Finance", "source_ip": "192.168.1.102", "provider": "anthropic", "service": "chat", "url": "https://api.anthropic.com/v1/messages", "bytes_sent": 1234, "bytes_received": 2345, "risk_level": "medium", "risk_reasons": ["medium_sensitivity_department"], "source_system": "network_logs_v1", "notes": null, "pii_risk": false, "pii_reasons": [], "use_case": "analysis_or_chat"}, {"id": "evt_fbc58c424ef2", "timestamp": "2025-11-24T12:01:15", "user_email": "jessica.harris@company.com", "department": "Engineering", "source_ip": "192.168.1.67", "provider": "anthropic", "service": "web_ui", "url": "https://claude.ai/chat/12345", "bytes_sent": 345, "bytes_received": 8912, "risk_level": "medium", "risk_reasons": ["external_ai_usage"], "source_system": "network_logs_v1", "notes": null, "pii_risk": false, "pii_reasons": [], "use_case": "content_generation"}, {"id": "evt_a31152a6d1be", "timestamp": "2025-11-24T12:15:39", "user_email": "daniel.anderson@company.com", "department": "Legal", "source_ip": "192.168.1.123", "provider": "openai", "service": "chat", "url": "https://api.openai.com/v1/chat/completions", "bytes_sent": 7823, "bytes_received": 3456, "risk_level": "high", "risk_reasons": ["high_sensitivity_department", "large_data_transfer"], "source_system": "network_logs_v1", "notes": null, "pii_risk": true, "pii_reasons": ["high_sensitivity_large_payload"], "use_case": "analysis_or_chat"}, {"id": "evt_91b524b5dc87", "timestamp": "2025-11-24T12:28:04", "user_email": "michelle.thomas@company.com", "department": "HR", "source_ip": "192.168.1.134", "provider": "google", "service": "chat", "url": "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent", "bytes_sent": 2234, "bytes_received": 4567, "risk_level": "medium", "risk_reasons": ["medium_sensitivity_department"], "source_system": "network_logs_v1", "notes": null, "pii_risk": false, "pii_reasons": [], "use_case": "analysis_or_chat"}, {"id": "evt_c5fab4b9c4ab", "timestamp": "2025-11-24T13:42:21", "user_email": "james.jackson@company.com", "department": "Marketing", "source_ip": "192.168.1.156", "provider": "openai", "service": "web_ui", "url": "https://chat.openai.com/chat", "bytes_sent": 512, "bytes_received": 7890, "risk_level": "medium", "risk_reasons": ["external_ai_usage"], "source_system": "network_logs_v1", "notes": null, "pii_risk": false, "pii_reasons": [], "use_case": "content_generation"}, {"id": "evt_83947c81960c", "timestamp": "2025-11-24T13:55:48", "user_email": "laura.moore@company.com", "department": "Clinical", "source_ip": "192.168.1.45", "provider": "openai", "service": "chat", "url": "https://api.openai.com/v1/chat/completions", "bytes_sent": 9234, "bytes_received": 5678, "risk_level": "high", "risk_reasons": ["high_sensitivity_department", "large_data_transfer"], "source_system": "network_logs_v1", "notes": null, "pii_risk": true, "pii_reasons": ["high_sensitivity_large_payload"], "use_case": "analysis_or_chat"}, {"id": "evt_b7bf538d112a", "timestamp": "2025-11-24T14:08:33", "user_email": "kevin.martin@company.com", "department": "Sales", "source_ip": "192.168.1.178", "provider": "anthropic", "service": "web_ui", "url": "https://claude.ai/chat/new", "bytes_sent": 423, "bytes_received": 6789, "risk_level": "medium", "risk_reasons": ["external_ai_usage"], "source_system": "network_logs_v1", "notes": null, "pii_risk": false, "pii_reasons": [], "use_case": "content_generation"}, {"id": "evt_7a03325d51df", "timestamp": "2025-11-24T14:21:07", "user_email": "stephanie.lee@company.com", "department": "Claims", "source_ip": "192.168.1.89", "provider": "unknown", "service": "unknown", "url": "https://unknown-ai-saas.com/api/chat", "bytes_sent": 5234, "bytes_received": 3456, "risk_level": "high", "risk_reasons": ["unknown_ai_provider"], "source_system": "network_logs_v1", "notes": null, "pii_risk": true, "pii_reasons": ["high_sensitivity_large_payload"], "use_case": "unknown"}, {"id": "evt_9fe3c8c54a61", "timestamp": "2025-11-24T14:35:42", "user_email": "brian.wilson@company.com", "department": "Engineering", "source_ip": "192.168.1.67", "provider": "github_copilot", "service": "code_assist", "url": "https://api.githubcopilot.com/completions", "bytes_sent": 1456, "bytes_received": 2567, "risk_level": "medium", "risk_reasons": ["external_ai_usage"], "source_system": "network_logs_v1", "notes": null, "pii_risk": false, "pii_reasons": [], "use_case": "code_assistance"}];
-        window.SHADOW_AI_SUMMARY = {"kpis": {"total_events": 20, "unique_users": 20, "shadow_ai_events": 20, "shadow_ai_percentage": 100.0, "high_risk_events": 8, "high_risk_percentage": 40.0, "pii_events_count": 7, "pii_events_percentage": 35.0}, "risk_counts": {"low": 0, "medium": 12, "high": 8}, "events_by_provider": {"openai": 8, "anthropic": 5, "github_copilot": 2, "google": 2, "perplexity": 1, "unknown": 2}, "events_by_department": {"Clinical": 3, "Engineering": 4, "Claims": 3, "Finance": 2, "Legal": 2, "HR": 2, "Marketing": 2, "Sales": 2}, "high_risk_events_by_department": {"Clinical": 3, "Claims": 3, "Legal": 2}, "time_range": {"start": "2025-11-24T09:15:32", "end": "2025-11-24T14:35:42"}, "events_per_day": {"2025-11-24": 20}, "pii_events_by_department": {"Clinical": 2, "Claims": 3, "Legal": 2}, "events_by_use_case": {"analysis_or_chat": 8, "content_generation": 6, "code_assistance": 2, "data_extraction": 1, "unknown": 3}, "high_risk_events_by_use_case": {"analysis_or_chat": 5, "data_extraction": 1, "unknown": 2}, "top_departments": [{"name": "Engineering", "count": 4}, {"name": "Clinical", "count": 3}, {"name": "Claims", "count": 3}], "top_high_risk_users": [{"email": "sarah.chen@company.com", "high_risk_count": 1}, {"email": "maria.garcia@company.com", "high_risk_count": 1}, {"email": "emily.johnson@company.com", "high_risk_count": 1}, {"email": "jennifer.lee@company.com", "high_risk_count": 1}, {"email": "amanda.taylor@company.com", "high_risk_count": 1}], "top_risks": [{"title": "Clinical team using public AI tools", "description": "Detected 3 high-risk AI events from the Clinical department. This department handles sensitive data that should not be processed by external AI systems.", "suggested_next_step": "Immediately review Clinical team's AI usage policies and provide approved alternatives."}, {"title": "Unknown AI tools in use with no governance", "description": "Found 2 events using unidentified AI services. These tools are outside IT visibility and may pose compliance risks.", "suggested_next_step": "Conduct an AI tool inventory and establish an approved vendor list."}, {"title": "Significant data being sent to AI providers", "description": "Detected 5 events with large data transfers (>4KB). This may indicate employees uploading documents or sensitive information.", "suggested_next_step": "Implement DLP controls and train employees on data handling policies."}], "shadow_ai_profile": "Most AI usage is in Engineering (20%) and Clinical (15%). About 100.0% of all AI events go to unsanctioned or unknown AI tools."};
+        window.SHADOW_AI_EVENTS = [{"id": "evt_1f1761a20d5a", "timestamp": "2025-11-24T09:15:32", "user_email": "sarah.chen@company.com", "department": "Clinical", "source_ip": "192.168.1.45", "provider": "openai", "service": "chat", "url": "https://api.openai.com/v1/chat/completions", "bytes_sent": 5823, "bytes_received": 2145, "risk_level": "high", "risk_reasons": ["high_sensitivity_department", "large_data_transfer"], "source_system": "network_logs_v1", "notes": null, "pii_risk": true, "pii_reasons": ["high_sensitivity_large_payload"], "use_case": "analysis_or_chat", "value_category": null, "estimated_minutes_saved": null, "business_outcome": null, "policy_alignment": null, "value_summary": null}, {"id": "evt_4de735ecfcfb", "timestamp": "2025-11-24T09:18:45", "user_email": "john.doe@company.com", "department": "Engineering", "source_ip": "192.168.1.67", "provider": "openai", "service": "web_ui", "url": "https://chat.openai.com/chat", "bytes_sent": 342, "bytes_received": 8721, "risk_level": "medium", "risk_reasons": ["external_ai_usage"], "source_system": "network_logs_v1", "notes": null, "pii_risk": false, "pii_reasons": [], "use_case": "content_generation", "value_category": null, "estimated_minutes_saved": null, "business_outcome": null, "policy_alignment": null, "value_summary": null}, {"id": "evt_a179fda4607a", "timestamp": "2025-11-24T09:32:11", "user_email": "maria.garcia@company.com", "department": "Claims", "source_ip": "192.168.1.89", "provider": "anthropic", "service": "chat", "url": "https://api.anthropic.com/v1/messages", "bytes_sent": 6234, "bytes_received": 3456, "risk_level": "high", "risk_reasons": ["high_sensitivity_department", "large_data_transfer"], "source_system": "network_logs_v1", "notes": null, "pii_risk": true, "pii_reasons": ["high_sensitivity_large_payload"], "use_case": "analysis_or_chat", "value_category": null, "estimated_minutes_saved": null, "business_outcome": null, "policy_alignment": null, "value_summary": null}, {"id": "evt_bad7e73b53c2", "timestamp": "2025-11-24T09:45:22", "user_email": "alex.wong@company.com", "department": "Finance", "source_ip": "192.168.1.102", "provider": "anthropic", "service": "web_ui", "url": "https://claude.ai/chat/new", "bytes_sent": 512, "bytes_received": 12456, "risk_level": "medium", "risk_reasons": ["medium_sensitivity_department"], "source_system": "network_logs_v1", "notes": null, "pii_risk": false, "pii_reasons": [], "use_case": "content_generation", "value_category": null, "estimated_minutes_saved": null, "business_outcome": null, "policy_alignment": null, "value_summary": null}, {"id": "evt_bceb8107f641", "timestamp": "2025-11-24T10:03:18", "user_email": "emily.johnson@company.com", "department": "Legal", "source_ip": "192.168.1.123", "provider": "openai", "service": "chat", "url": "https://api.openai.com/v1/chat/completions", "bytes_sent": 8912, "bytes_received": 4567, "risk_level": "high", "risk_reasons": ["high_sensitivity_department", "large_data_transfer"], "source_system": "network_logs_v1", "notes": null, "pii_risk": true, "pii_reasons": ["high_sensitivity_large_payload"], "use_case": "analysis_or_chat", "value_category": null, "estimated_minutes_saved": null, "business_outcome": null, "policy_alignment": null, "value_summary": null}, {"id": "evt_93f94ba7d758", "timestamp": "2025-11-24T10:15:44", "user_email": "david.kim@company.com", "department": "Engineering", "source_ip": "192.168.1.67", "provider": "github_copilot", "service": "code_assist", "url": "https://api.githubcopilot.com/completions", "bytes_sent": 1234, "bytes_received": 2345, "risk_level": "medium", "risk_reasons": ["external_ai_usage"], "source_system": "network_logs_v1", "notes": null, "pii_risk": false, "pii_reasons": [], "use_case": "code_assistance", "value_category": null, "estimated_minutes_saved": null, "business_outcome": null, "policy_alignment": null, "value_summary": null}, {"id": "evt_d75f78813ff2", "timestamp": "2025-11-24T10:28:09", "user_email": "lisa.patel@company.com", "department": "HR", "source_ip": "192.168.1.134", "provider": "google", "service": "chat", "url": "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent", "bytes_sent": 2345, "bytes_received": 3456, "risk_level": "medium", "risk_reasons": ["medium_sensitivity_department"], "source_system": "network_logs_v1", "notes": null, "pii_risk": false, "pii_reasons": [], "use_case": "analysis_or_chat", "value_category": null, "estimated_minutes_saved": null, "business_outcome": null, "policy_alignment": null, "value_summary": null}, {"id": "evt_7f09f0252911", "timestamp": "2025-11-24T10:42:33", "user_email": "michael.brown@company.com", "department": "Marketing", "source_ip": "192.168.1.156", "provider": "openai", "service": "web_ui", "url": "https://chat.openai.com/chat", "bytes_sent": 423, "bytes_received": 6789, "risk_level": "medium", "risk_reasons": ["external_ai_usage"], "source_system": "network_logs_v1", "notes": null, "pii_risk": false, "pii_reasons": [], "use_case": "content_generation", "value_category": null, "estimated_minutes_saved": null, "business_outcome": null, "policy_alignment": null, "value_summary": null}, {"id": "evt_0d55895365a9", "timestamp": "2025-11-24T11:05:17", "user_email": "jennifer.lee@company.com", "department": "Clinical", "source_ip": "192.168.1.45", "provider": "openai", "service": "embeddings", "url": "https://api.openai.com/v1/embeddings", "bytes_sent": 3456, "bytes_received": 1234, "risk_level": "high", "risk_reasons": ["high_sensitivity_department"], "source_system": "network_logs_v1", "notes": null, "pii_risk": false, "pii_reasons": [], "use_case": "data_extraction", "value_category": null, "estimated_minutes_saved": null, "business_outcome": null, "policy_alignment": null, "value_summary": null}, {"id": "evt_f3da1a7130d6", "timestamp": "2025-11-24T11:18:52", "user_email": "robert.martinez@company.com", "department": "Sales", "source_ip": "192.168.1.178", "provider": "perplexity", "service": "web_ui", "url": "https://perplexity.ai/search", "bytes_sent": 234, "bytes_received": 5678, "risk_level": "medium", "risk_reasons": ["external_ai_usage"], "source_system": "network_logs_v1", "notes": null, "pii_risk": false, "pii_reasons": [], "use_case": "unknown", "value_category": null, "estimated_minutes_saved": null, "business_outcome": null, "policy_alignment": null, "value_summary": null}, {"id": "evt_4248fec01d89", "timestamp": "2025-11-24T11:33:28", "user_email": "amanda.taylor@company.com", "department": "Claims", "source_ip": "192.168.1.89", "provider": "unknown", "service": "unknown", "url": "https://unknown-ai-saas.com/api/generate", "bytes_sent": 4567, "bytes_received": 2345, "risk_level": "high", "risk_reasons": ["unknown_ai_provider"], "source_system": "network_logs_v1", "notes": null, "pii_risk": true, "pii_reasons": ["high_sensitivity_large_payload"], "use_case": "unknown", "value_category": null, "estimated_minutes_saved": null, "business_outcome": null, "policy_alignment": null, "value_summary": null}, {"id": "evt_3f7a27f29f5c", "timestamp": "2025-11-24T11:47:41", "user_email": "christopher.white@company.com", "department": "Finance", "source_ip": "192.168.1.102", "provider": "anthropic", "service": "chat", "url": "https://api.anthropic.com/v1/messages", "bytes_sent": 1234, "bytes_received": 2345, "risk_level": "medium", "risk_reasons": ["medium_sensitivity_department"], "source_system": "network_logs_v1", "notes": null, "pii_risk": false, "pii_reasons": [], "use_case": "analysis_or_chat", "value_category": null, "estimated_minutes_saved": null, "business_outcome": null, "policy_alignment": null, "value_summary": null}, {"id": "evt_fbc58c424ef2", "timestamp": "2025-11-24T12:01:15", "user_email": "jessica.harris@company.com", "department": "Engineering", "source_ip": "192.168.1.67", "provider": "anthropic", "service": "web_ui", "url": "https://claude.ai/chat/12345", "bytes_sent": 345, "bytes_received": 8912, "risk_level": "medium", "risk_reasons": ["external_ai_usage"], "source_system": "network_logs_v1", "notes": null, "pii_risk": false, "pii_reasons": [], "use_case": "content_generation", "value_category": null, "estimated_minutes_saved": null, "business_outcome": null, "policy_alignment": null, "value_summary": null}, {"id": "evt_a31152a6d1be", "timestamp": "2025-11-24T12:15:39", "user_email": "daniel.anderson@company.com", "department": "Legal", "source_ip": "192.168.1.123", "provider": "openai", "service": "chat", "url": "https://api.openai.com/v1/chat/completions", "bytes_sent": 7823, "bytes_received": 3456, "risk_level": "high", "risk_reasons": ["high_sensitivity_department", "large_data_transfer"], "source_system": "network_logs_v1", "notes": null, "pii_risk": true, "pii_reasons": ["high_sensitivity_large_payload"], "use_case": "analysis_or_chat", "value_category": null, "estimated_minutes_saved": null, "business_outcome": null, "policy_alignment": null, "value_summary": null}, {"id": "evt_91b524b5dc87", "timestamp": "2025-11-24T12:28:04", "user_email": "michelle.thomas@company.com", "department": "HR", "source_ip": "192.168.1.134", "provider": "google", "service": "chat", "url": "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent", "bytes_sent": 2234, "bytes_received": 4567, "risk_level": "medium", "risk_reasons": ["medium_sensitivity_department"], "source_system": "network_logs_v1", "notes": null, "pii_risk": false, "pii_reasons": [], "use_case": "analysis_or_chat", "value_category": null, "estimated_minutes_saved": null, "business_outcome": null, "policy_alignment": null, "value_summary": null}, {"id": "evt_c5fab4b9c4ab", "timestamp": "2025-11-24T13:42:21", "user_email": "james.jackson@company.com", "department": "Marketing", "source_ip": "192.168.1.156", "provider": "openai", "service": "web_ui", "url": "https://chat.openai.com/chat", "bytes_sent": 512, "bytes_received": 7890, "risk_level": "medium", "risk_reasons": ["external_ai_usage"], "source_system": "network_logs_v1", "notes": null, "pii_risk": false, "pii_reasons": [], "use_case": "content_generation", "value_category": null, "estimated_minutes_saved": null, "business_outcome": null, "policy_alignment": null, "value_summary": null}, {"id": "evt_83947c81960c", "timestamp": "2025-11-24T13:55:48", "user_email": "laura.moore@company.com", "department": "Clinical", "source_ip": "192.168.1.45", "provider": "openai", "service": "chat", "url": "https://api.openai.com/v1/chat/completions", "bytes_sent": 9234, "bytes_received": 5678, "risk_level": "high", "risk_reasons": ["high_sensitivity_department", "large_data_transfer"], "source_system": "network_logs_v1", "notes": null, "pii_risk": true, "pii_reasons": ["high_sensitivity_large_payload"], "use_case": "analysis_or_chat", "value_category": null, "estimated_minutes_saved": null, "business_outcome": null, "policy_alignment": null, "value_summary": null}, {"id": "evt_b7bf538d112a", "timestamp": "2025-11-24T14:08:33", "user_email": "kevin.martin@company.com", "department": "Sales", "source_ip": "192.168.1.178", "provider": "anthropic", "service": "web_ui", "url": "https://claude.ai/chat/new", "bytes_sent": 423, "bytes_received": 6789, "risk_level": "medium", "risk_reasons": ["external_ai_usage"], "source_system": "network_logs_v1", "notes": null, "pii_risk": false, "pii_reasons": [], "use_case": "content_generation", "value_category": "Productivity", "estimated_minutes_saved": 15, "business_outcome": "Enhanced efficiency in sales processes through AI assistance.", "policy_alignment": "Questionable", "value_summary": "User accessed an external AI service to improve sales productivity."}, {"id": "evt_7a03325d51df", "timestamp": "2025-11-24T14:21:07", "user_email": "stephanie.lee@company.com", "department": "Claims", "source_ip": "192.168.1.89", "provider": "unknown", "service": "unknown", "url": "https://unknown-ai-saas.com/api/chat", "bytes_sent": 5234, "bytes_received": 3456, "risk_level": "high", "risk_reasons": ["unknown_ai_provider"], "source_system": "network_logs_v1", "notes": null, "pii_risk": true, "pii_reasons": ["high_sensitivity_large_payload"], "use_case": "unknown", "value_category": "Unknown", "estimated_minutes_saved": 0, "business_outcome": "Unknown due to lack of information on the AI service used.", "policy_alignment": "Non-compliant", "value_summary": "User accessed an unknown AI service that contains PII, raising high risk and compliance concerns."}, {"id": "evt_9fe3c8c54a61", "timestamp": "2025-11-24T14:35:42", "user_email": "brian.wilson@company.com", "department": "Engineering", "source_ip": "192.168.1.67", "provider": "github_copilot", "service": "code_assist", "url": "https://api.githubcopilot.com/completions", "bytes_sent": 1456, "bytes_received": 2567, "risk_level": "medium", "risk_reasons": ["external_ai_usage"], "source_system": "network_logs_v1", "notes": null, "pii_risk": false, "pii_reasons": [], "use_case": "code_assistance", "value_category": "Productivity", "estimated_minutes_saved": 30, "business_outcome": "Increased efficiency in code development and faster project delivery.", "policy_alignment": "Questionable", "value_summary": "The user utilized GitHub Copilot for code completion, potentially enhancing productivity but raising concerns about external AI usage policies."}];
+        window.SHADOW_AI_SUMMARY = {"kpis": {"total_events": 20, "unique_users": 20, "shadow_ai_events": 20, "shadow_ai_percentage": 100.0, "high_risk_events": 8, "high_risk_percentage": 40.0, "pii_events_count": 7, "pii_events_percentage": 35.0, "enriched_events_count": 3, "enriched_events_percentage": 15.0, "total_minutes_saved": 45, "total_hours_saved": 0.8}, "risk_counts": {"low": 0, "medium": 12, "high": 8}, "events_by_provider": {"openai": 8, "anthropic": 5, "github_copilot": 2, "google": 2, "perplexity": 1, "unknown": 2}, "events_by_department": {"Clinical": 3, "Engineering": 4, "Claims": 3, "Finance": 2, "Legal": 2, "HR": 2, "Marketing": 2, "Sales": 2}, "high_risk_events_by_department": {"Clinical": 3, "Claims": 3, "Legal": 2}, "time_range": {"start": "2025-11-24T09:15:32", "end": "2025-11-24T14:35:42"}, "events_per_day": {"2025-11-24": 20}, "pii_events_by_department": {"Clinical": 2, "Claims": 3, "Legal": 2}, "events_by_use_case": {"analysis_or_chat": 8, "content_generation": 6, "code_assistance": 2, "data_extraction": 1, "unknown": 3}, "high_risk_events_by_use_case": {"analysis_or_chat": 5, "data_extraction": 1, "unknown": 2}, "top_departments": [{"name": "Engineering", "count": 4}, {"name": "Clinical", "count": 3}, {"name": "Claims", "count": 3}], "top_high_risk_users": [{"email": "sarah.chen@company.com", "high_risk_count": 1}, {"email": "maria.garcia@company.com", "high_risk_count": 1}, {"email": "emily.johnson@company.com", "high_risk_count": 1}, {"email": "jennifer.lee@company.com", "high_risk_count": 1}, {"email": "amanda.taylor@company.com", "high_risk_count": 1}], "top_risks": [{"title": "Clinical team using public AI tools", "description": "Detected 3 high-risk AI events from the Clinical department. This department handles sensitive data that should not be processed by external AI systems.", "suggested_next_step": "Immediately review Clinical team's AI usage policies and provide approved alternatives."}, {"title": "Unknown AI tools in use with no governance", "description": "Found 2 events using unidentified AI services. These tools are outside IT visibility and may pose compliance risks.", "suggested_next_step": "Conduct an AI tool inventory and establish an approved vendor list."}, {"title": "Significant data being sent to AI providers", "description": "Detected 5 events with large data transfers (>4KB). This may indicate employees uploading documents or sensitive information.", "suggested_next_step": "Implement DLP controls and train employees on data handling policies."}], "shadow_ai_profile": "Most AI usage is in Engineering (20%) and Clinical (15%). About 100.0% of all AI events go to unsanctioned or unknown AI tools.", "value_enrichment": {"enriched_count": 3, "total_minutes_saved": 45, "total_hours_saved": 0.8, "value_category_counts": {"Productivity": 2, "Unknown": 1}, "average_minutes_per_event": 15.0}};
     </script>
 
     <script>
@@ -922,7 +414,8 @@
                         position: 'bottom',
                         labels: {
                             font: { size: 14 },
-                            padding: 15
+                            padding: 15,
+                            color: 'rgba(255,255,255,0.85)'
                         }
                     }
                 },
@@ -981,15 +474,28 @@
                         position: 'bottom',
                         labels: {
                             font: { size: 14 },
-                            padding: 15
+                            padding: 15,
+                            color: 'rgba(255,255,255,0.85)'
                         }
                     }
                 },
                 scales: {
+                    x: {
+                        ticks: {
+                            color: 'rgba(255,255,255,0.8)'
+                        },
+                        grid: {
+                            color: 'rgba(255,255,255,0.12)'
+                        }
+                    },
                     y: {
                         beginAtZero: true,
                         ticks: {
-                            stepSize: 1
+                            stepSize: 1,
+                            color: 'rgba(255,255,255,0.8)'
+                        },
+                        grid: {
+                            color: 'rgba(255,255,255,0.12)'
                         }
                     }
                 },
@@ -1085,12 +591,28 @@
                     responsive: true,
                     maintainAspectRatio: true,
                     plugins: {
-                        legend: { display: false }
+                        legend: {
+                            display: false
+                        }
                     },
                     scales: {
+                        x: {
+                            ticks: {
+                                color: 'rgba(255,255,255,0.8)'
+                            },
+                            grid: {
+                                color: 'rgba(255,255,255,0.12)'
+                            }
+                        },
                         y: {
                             beginAtZero: true,
-                            ticks: { stepSize: 1 }
+                            ticks: {
+                                stepSize: 1,
+                                color: 'rgba(255,255,255,0.8)'
+                            },
+                            grid: {
+                                color: 'rgba(255,255,255,0.12)'
+                            }
                         }
                     }
                 }
@@ -1133,7 +655,11 @@
                     plugins: {
                         legend: {
                             position: 'bottom',
-                            labels: { font: { size: 14 }, padding: 15 }
+                            labels: {
+                                font: { size: 14 },
+                                padding: 15,
+                                color: 'rgba(255,255,255,0.85)'
+                            }
                         }
                     }
                 }
@@ -1196,6 +722,349 @@
                         <h3>Diverse AI usage patterns</h3>
                         <p>AI usage spans multiple use cases without a clear dominant pattern. This suggests exploratory adoption across different teams and workflows.</p>
                     `;
+                }
+            }
+        }
+
+        // ===== EXECUTIVE VALUE BRIEFING FUNCTIONS =====
+
+        // Compute total events count
+        function computeTotalEvents() {
+            const events = window.SHADOW_AI_EVENTS || [];
+            return events.length;
+        }
+
+        // Compute hours saved (rounded to nearest 0.5)
+        function computeRoundedHoursSaved(events) {
+            if (!events) events = window.SHADOW_AI_EVENTS || [];
+            const enrichedEvents = events.filter(e => e.value_category);
+            if (enrichedEvents.length === 0) return 0;
+
+            let totalMinutes = 0;
+            enrichedEvents.forEach(e => {
+                totalMinutes += (e.estimated_minutes_saved || 0);
+            });
+
+            const hours = totalMinutes / 60;
+            return Math.round(hours * 2) / 2; // Round to nearest 0.5
+        }
+
+        // Compute revenue-related usage percentage
+        function computeRevenueUsagePercentage(events) {
+            if (!events) events = window.SHADOW_AI_EVENTS || [];
+            const enrichedEvents = events.filter(e => e.value_category);
+            if (enrichedEvents.length === 0) return 0;
+
+            const revenueCount = enrichedEvents.filter(e => e.value_category === 'Revenue').length;
+            return Math.round((revenueCount / enrichedEvents.length) * 100);
+        }
+
+        // Compute most active department
+        function computeMostActiveDepartment(events) {
+            if (!events) events = window.SHADOW_AI_EVENTS || [];
+            if (events.length === 0) return { name: '—', count: 0, percentage: 0 };
+
+            const deptCounts = {};
+            events.forEach(e => {
+                const dept = e.department || 'Unknown';
+                deptCounts[dept] = (deptCounts[dept] || 0) + 1;
+            });
+
+            const sorted = Object.entries(deptCounts).sort((a, b) => b[1] - a[1]);
+            if (sorted.length === 0) return { name: '—', count: 0, percentage: 0 };
+
+            const [name, count] = sorted[0];
+            const percentage = Math.round((count / events.length) * 100);
+            return { name, count, percentage };
+        }
+
+        // Compute value category counts
+        function computeValueCategoryCounts(events) {
+            if (!events) events = window.SHADOW_AI_EVENTS || [];
+            const enrichedEvents = events.filter(e => e.value_category);
+
+            const counts = {};
+            enrichedEvents.forEach(e => {
+                const cat = e.value_category || 'Unknown';
+                counts[cat] = (counts[cat] || 0) + 1;
+            });
+
+            return counts;
+        }
+
+        // Generate executive headlines (3 short bullets)
+        function generateExecutiveHeadlines(events) {
+            if (!events) events = window.SHADOW_AI_EVENTS || [];
+            const enrichedEvents = events.filter(e => e.value_category);
+
+            if (enrichedEvents.length === 0) return [];
+
+            const headlines = [];
+            const hoursSaved = computeRoundedHoursSaved(events);
+            const topDept = computeMostActiveDepartment(events);
+            const revenuePct = computeRevenueUsagePercentage(events);
+            const categoryCounts = computeValueCategoryCounts(events);
+
+            // Headline 1: Time saved
+            if (hoursSaved > 0) {
+                const hourText = hoursSaved === 1 ? '1 hour' : `${hoursSaved} hours`;
+                headlines.push(`AI saved an estimated <strong>${hourText}</strong> of manual work this period.`);
+            } else {
+                headlines.push(`AI events detected, but no time savings quantified yet.`);
+            }
+
+            // Headline 2: Department usage
+            if (topDept.name !== '—') {
+                headlines.push(`<strong>${topDept.name}</strong> accounts for <strong>${topDept.percentage}%</strong> of all AI usage.`);
+            } else {
+                headlines.push(`AI usage is distributed across multiple departments.`);
+            }
+
+            // Headline 3: Revenue alignment or opportunity
+            if (revenuePct > 0) {
+                headlines.push(`<strong>${revenuePct}%</strong> of AI usage is aligned to revenue-generating activities.`);
+            } else {
+                // Check for top category instead
+                const sortedCats = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1]);
+                if (sortedCats.length > 0) {
+                    const topCat = sortedCats[0][0].replace(/([A-Z])/g, ' $1').trim().toLowerCase();
+                    headlines.push(`Most AI usage focuses on <strong>${topCat}</strong> — revenue alignment is an opportunity.`);
+                } else {
+                    headlines.push(`No revenue-aligned cases detected — potential value upside.`);
+                }
+            }
+
+            return headlines;
+        }
+
+        // Create value insights (top 2-3 value events)
+        function createValueInsights(events) {
+            if (!events) events = window.SHADOW_AI_EVENTS || [];
+            const enrichedEvents = events.filter(e => e.value_category && e.estimated_minutes_saved > 0);
+
+            if (enrichedEvents.length === 0) {
+                return 'No enriched events with measurable value available yet. Run the value enrichment worker to analyze AI usage impact.';
+            }
+
+            // Sort by minutes saved descending
+            const sorted = enrichedEvents.sort((a, b) =>
+                (b.estimated_minutes_saved || 0) - (a.estimated_minutes_saved || 0)
+            );
+
+            const topEvents = sorted.slice(0, 3);
+            const topCategories = [...new Set(topEvents.map(e => e.value_category))];
+            const totalMinutes = topEvents.reduce((sum, e) => sum + (e.estimated_minutes_saved || 0), 0);
+
+            const catText = topCategories.map(c => c.replace(/([A-Z])/g, ' $1').trim().toLowerCase()).join(', ');
+
+            return `Top value comes from ${catText} activities, saving approximately ${totalMinutes} minutes. ${topEvents[0]?.department || 'Various departments'} leads in high-value AI adoption.`;
+        }
+
+        // Create underutilization insights (departments with <5% usage)
+        function createUnderutilizationInsights(events) {
+            if (!events) events = window.SHADOW_AI_EVENTS || [];
+            if (events.length === 0) {
+                return 'Insufficient data to identify underutilized departments.';
+            }
+
+            const deptCounts = {};
+            events.forEach(e => {
+                const dept = e.department || 'Unknown';
+                deptCounts[dept] = (deptCounts[dept] || 0) + 1;
+            });
+
+            const totalEvents = events.length;
+            const underutilized = Object.entries(deptCounts)
+                .filter(([dept, count]) => (count / totalEvents) * 100 < 5 && dept !== 'Unknown')
+                .map(([dept]) => dept);
+
+            if (underutilized.length === 0) {
+                return 'All departments show reasonable AI engagement. Consider expanding use cases within existing teams.';
+            }
+
+            const deptList = underutilized.slice(0, 3).join(', ');
+            return `${deptList} show minimal AI adoption (<5% of events). These teams may benefit from AI enablement programs or lack awareness of available tools.`;
+        }
+
+        // Create risk drag insights (high-risk value events)
+        function createRiskDragInsights(events) {
+            if (!events) events = window.SHADOW_AI_EVENTS || [];
+
+            const highRiskWithValue = events.filter(e =>
+                e.risk_level === 'high' && e.value_category
+            );
+
+            const totalHighRisk = events.filter(e => e.risk_level === 'high').length;
+
+            if (highRiskWithValue.length === 0) {
+                if (totalHighRisk > 0) {
+                    return `${totalHighRisk} high-risk events detected, but none have been value-enriched yet. High-risk usage in sensitive departments may be blocking productive AI adoption.`;
+                }
+                return 'No high-risk events are currently blocking value delivery. Risk posture is manageable.';
+            }
+
+            const blockedMinutes = highRiskWithValue.reduce((sum, e) =>
+                sum + (e.estimated_minutes_saved || 0), 0
+            );
+            const blockedDepts = [...new Set(highRiskWithValue.map(e => e.department))].slice(0, 2);
+
+            return `${highRiskWithValue.length} high-risk events represent ~${blockedMinutes} minutes of potential value that requires governance review. ${blockedDepts.join(' and ')} are most affected.`;
+        }
+
+        // Populate Executive Briefing section
+        function populateExecutiveBriefing() {
+            const events = window.SHADOW_AI_EVENTS || [];
+            const enrichedEvents = events.filter(e => e.value_category);
+
+            // Hide everything if no enriched events
+            if (enrichedEvents.length === 0) {
+                document.getElementById('exec-briefing').style.display = 'none';
+                document.getElementById('exec-kpi-row').style.display = 'none';
+                document.getElementById('value-category-card').style.display = 'none';
+                document.getElementById('exec-insight-cards').style.display = 'none';
+                return;
+            }
+
+            // Show all executive sections
+            document.getElementById('exec-briefing').style.display = 'block';
+            document.getElementById('exec-kpi-row').style.display = 'grid';
+            document.getElementById('value-category-card').style.display = 'block';
+            document.getElementById('exec-insight-cards').style.display = 'grid';
+
+            // Generate and display headlines
+            const headlines = generateExecutiveHeadlines(events);
+            const headlinesEl = document.getElementById('exec-headlines');
+            if (headlinesEl && headlines.length > 0) {
+                headlinesEl.innerHTML = headlines.map(h => `<li>${h}</li>`).join('');
+            }
+        }
+
+        // Populate KPI Overview tiles
+        function populateKPIOverview() {
+            const events = window.SHADOW_AI_EVENTS || [];
+            const enrichedEvents = events.filter(e => e.value_category);
+
+            if (enrichedEvents.length === 0) return;
+
+            // Total events
+            const totalEl = document.getElementById('exec-total-events');
+            const totalDescEl = document.getElementById('exec-total-events-desc');
+            if (totalEl) totalEl.textContent = events.length;
+            if (totalDescEl) totalDescEl.textContent = `${enrichedEvents.length} of ${events.length} enriched`;
+
+            // Hours saved
+            const hoursSaved = computeRoundedHoursSaved(events);
+            const hoursEl = document.getElementById('exec-hours-saved');
+            const hoursDescEl = document.getElementById('exec-hours-saved-desc');
+            if (hoursEl) hoursEl.textContent = hoursSaved + 'h';
+            if (hoursDescEl) {
+                const totalMinutes = enrichedEvents.reduce((s, e) => s + (e.estimated_minutes_saved || 0), 0);
+                hoursDescEl.textContent = `${totalMinutes} min across ${enrichedEvents.length} events`;
+            }
+
+            // Revenue percentage
+            const revPct = computeRevenueUsagePercentage(events);
+            const revEl = document.getElementById('exec-revenue-pct');
+            const revDescEl = document.getElementById('exec-revenue-desc');
+            if (revEl) revEl.textContent = revPct + '%';
+            if (revDescEl) revDescEl.textContent = revPct > 0 ? 'Revenue & customer-facing work' : 'Opportunity for revenue alignment';
+
+            // Most active department
+            const topDept = computeMostActiveDepartment(events);
+            const deptEl = document.getElementById('exec-top-dept');
+            const deptDescEl = document.getElementById('exec-top-dept-desc');
+            if (deptEl) deptEl.textContent = topDept.name;
+            if (deptDescEl) deptDescEl.textContent = `${topDept.count} events (${topDept.percentage}%)`;
+        }
+
+        // Populate executive insight cards
+        function populateExecInsightCards() {
+            const events = window.SHADOW_AI_EVENTS || [];
+
+            // Value insights
+            const valueTextEl = document.getElementById('insight-value-text');
+            if (valueTextEl) {
+                valueTextEl.textContent = createValueInsights(events);
+            }
+
+            // Underutilization insights
+            const underutilTextEl = document.getElementById('insight-underutil-text');
+            if (underutilTextEl) {
+                underutilTextEl.textContent = createUnderutilizationInsights(events);
+            }
+
+            // Risk drag insights
+            const riskTextEl = document.getElementById('insight-risk-text');
+            if (riskTextEl) {
+                riskTextEl.textContent = createRiskDragInsights(events);
+            }
+        }
+
+        // Initialize Value Category Chart (enhanced)
+        function initValueCategoryChart() {
+            const events = window.SHADOW_AI_EVENTS || [];
+            const enrichedEvents = events.filter(e => e.value_category);
+
+            const chartCanvas = document.getElementById('valueCategoryChart');
+            if (!chartCanvas || enrichedEvents.length === 0) return;
+
+            const categories = computeValueCategoryCounts(events);
+            if (Object.keys(categories).length === 0) return;
+
+            const labels = Object.keys(categories);
+            const data = Object.values(categories);
+
+            // Color mapping for value categories
+            const colorMap = {
+                'Productivity': '#10b981',
+                'Quality': '#3b82f6',
+                'Revenue': '#8b5cf6',
+                'CostReduction': '#f59e0b',
+                'Innovation': '#ec4899',
+                'Unknown': '#6b7280'
+            };
+
+            const colors = labels.map(l => colorMap[l] || '#6b7280');
+
+            const ctx = chartCanvas.getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels.map(l => l.replace(/([A-Z])/g, ' $1').trim()),
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors,
+                        borderWidth: 3,
+                        borderColor: 'rgba(16, 24, 64, 0.8)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    cutout: '55%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: { size: 14, weight: '500' },
+                                padding: 20,
+                                color: 'rgba(255,255,255,0.85)',
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Update caption
+            const caption = document.getElementById('value-chart-caption');
+            if (caption) {
+                const topCategory = Object.entries(categories).sort((a, b) => b[1] - a[1])[0];
+                if (topCategory) {
+                    const catName = topCategory[0].replace(/([A-Z])/g, ' $1').trim();
+                    const pct = Math.round((topCategory[1] / enrichedEvents.length) * 100);
+                    caption.textContent = `${catName} accounts for ${pct}% of value-aligned AI usage.`;
                 }
             }
         }
@@ -1364,7 +1233,7 @@
             if (displayEvents.length === 0) {
                 const row = tbody.insertRow();
                 const cell = row.insertCell();
-                cell.colSpan = 6;
+                cell.colSpan = 8;
                 cell.textContent = 'No events match the current filters.';
                 cell.style.textAlign = 'center';
                 cell.style.padding = '20px';
@@ -1376,6 +1245,7 @@
             displayEvents.forEach(event => {
                 const row = tbody.insertRow();
                 row.dataset.eventId = event.id;
+                row.style.cursor = 'pointer';
                 row.onclick = () => showEventModal(event.id);
 
                 // Time
@@ -1397,13 +1267,39 @@
                 // Risk
                 const riskCell = row.insertCell();
                 const riskBadge = document.createElement('span');
-                riskBadge.className = `risk-badge ${event.risk_level}`;
+                riskBadge.className = `risk-badge risk-badge--${event.risk_level}`;
                 riskBadge.textContent = event.risk_level.toUpperCase();
                 riskCell.appendChild(riskBadge);
 
-                // Summary
-                const summaryCell = row.insertCell();
-                summaryCell.textContent = generateEventSummary(event);
+                // PII Risk
+                const piiCell = row.insertCell();
+                if (event.pii_risk) {
+                    const piiBadge = document.createElement('span');
+                    piiBadge.className = 'risk-badge risk-badge-pii';
+                    piiBadge.textContent = 'PII';
+                    piiCell.appendChild(piiBadge);
+                } else {
+                    piiCell.textContent = '—';
+                    piiCell.style.color = '#6b7280';
+                }
+
+                // Value Category
+                const valueCell = row.insertCell();
+                if (event.value_category) {
+                    valueCell.textContent = event.value_category.replace(/([A-Z])/g, ' $1').trim();
+                } else {
+                    valueCell.textContent = '—';
+                    valueCell.style.color = '#6b7280';
+                }
+
+                // Est. Minutes Saved
+                const minutesCell = row.insertCell();
+                if (event.estimated_minutes_saved != null) {
+                    minutesCell.textContent = event.estimated_minutes_saved + ' min';
+                } else {
+                    minutesCell.textContent = '—';
+                    minutesCell.style.color = '#6b7280';
+                }
             });
         }
 
@@ -1450,79 +1346,122 @@
 
             const modal = document.getElementById('event-modal');
             const modalBody = document.getElementById('event-modal-body');
+            const modalHeaderInfo = document.getElementById('modal-header-info');
 
-            // Build modal content
+            // Update modal header badges
+            const hasPII = event.risk_reasons && event.risk_reasons.some(r =>
+                r.includes('pii_') || r.includes('phi_')
+            );
+
+            modalHeaderInfo.innerHTML = `
+                <span style="color: var(--text-secondary); font-size: 14px;">${new Date(event.timestamp).toLocaleString()}</span>
+                <span class="risk-badge risk-badge-${event.risk_level}">${event.risk_level.toUpperCase()}</span>
+                ${hasPII ? '<span class="risk-badge risk-badge-pii">PII/PHI</span>' : ''}
+            `;
+
+            // Build two-column modal content
             let html = `
-                <div class="event-detail-section">
-                    <div class="event-detail-label">Timestamp</div>
-                    <div class="event-detail-value">${new Date(event.timestamp).toLocaleString()}</div>
-                </div>
+                <div class="modal-content-grid">
+                    <div class="modal-column">
+                        <div class="event-detail-section">
+                            <div class="event-detail-label">User</div>
+                            <div class="event-detail-value">${event.user_email || 'N/A'}</div>
+                        </div>
 
-                <div class="event-detail-section">
-                    <div class="event-detail-label">User</div>
-                    <div class="event-detail-value">${event.user_email || 'N/A'}</div>
-                </div>
+                        <div class="event-detail-section">
+                            <div class="event-detail-label">Department</div>
+                            <div class="event-detail-value">${event.department || 'N/A'}</div>
+                        </div>
 
-                <div class="event-detail-section">
-                    <div class="event-detail-label">Department</div>
-                    <div class="event-detail-value">${event.department || 'N/A'}</div>
-                </div>
+                        <div class="event-detail-section">
+                            <div class="event-detail-label">Provider & Service</div>
+                            <div class="event-detail-value">
+                                ${event.provider.charAt(0).toUpperCase() + event.provider.slice(1)}
+                                (${event.service.replace('_', ' ')})
+                            </div>
+                        </div>
 
-                <div class="event-detail-section">
-                    <div class="event-detail-label">Provider & Service</div>
-                    <div class="event-detail-value">
-                        ${event.provider.charAt(0).toUpperCase() + event.provider.slice(1)}
-                        (${event.service.replace('_', ' ')})
+                        <div class="event-detail-section">
+                            <div class="event-detail-label">URL</div>
+                            <div class="event-detail-value">${truncateUrl(event.url, 60)}</div>
+                        </div>
+
+                        <div class="event-detail-section">
+                            <div class="event-detail-label">Data Transfer</div>
+                            <div class="event-detail-value">
+                                Sent: ${event.bytes_sent ? (event.bytes_sent / 1024).toFixed(2) + ' KB' : 'N/A'}<br>
+                                Received: ${event.bytes_received ? (event.bytes_received / 1024).toFixed(2) + ' KB' : 'N/A'}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-column">
+                        <div class="event-detail-section">
+                            <div class="event-detail-label">Risk Factors</div>
+                            <ul class="risk-reasons-list">
+                                ${event.risk_reasons.map(reason =>
+                                    `<li>${riskReasonExplanations[reason] || reason}</li>`
+                                ).join('')}
+                            </ul>
+                        </div>
+
+                        <div class="event-detail-section">
+                            <div class="event-detail-label">Recommended Follow-up</div>
+                            <ul class="follow-up-list">
+                                ${getFollowUpRecommendations(event.risk_level).map(rec =>
+                                    `<li>${rec}</li>`
+                                ).join('')}
+                            </ul>
+                        </div>
                     </div>
                 </div>
 
-                <div class="event-detail-section">
-                    <div class="event-detail-label">URL</div>
-                    <div class="event-detail-value">${truncateUrl(event.url, 80)}</div>
-                </div>
-
-                <div class="event-detail-section">
-                    <div class="event-detail-label">Data Transfer</div>
-                    <div class="event-detail-value">
-                        Sent: ${event.bytes_sent ? (event.bytes_sent / 1024).toFixed(2) + ' KB' : 'N/A'} |
-                        Received: ${event.bytes_received ? (event.bytes_received / 1024).toFixed(2) + ' KB' : 'N/A'}
+                ${event.value_category ? `
+                <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border-color);">
+                    <h3 style="margin-bottom: 16px; color: var(--text-primary); font-size: 18px;">💰 Value Enrichment</h3>
+                    <div class="modal-content-grid">
+                        <div class="modal-column">
+                            <div class="event-detail-section">
+                                <div class="event-detail-label">Value Category</div>
+                                <div class="event-detail-value">${event.value_category}</div>
+                            </div>
+                            <div class="event-detail-section">
+                                <div class="event-detail-label">Time Saved</div>
+                                <div class="event-detail-value">${event.estimated_minutes_saved || 0} minutes</div>
+                            </div>
+                            <div class="event-detail-section">
+                                <div class="event-detail-label">Policy Alignment</div>
+                                <div class="event-detail-value">${event.policy_alignment || 'N/A'}</div>
+                            </div>
+                        </div>
+                        <div class="modal-column">
+                            <div class="event-detail-section">
+                                <div class="event-detail-label">Business Outcome</div>
+                                <div class="event-detail-value" style="font-size: 14px; line-height: 1.5;">${event.business_outcome || 'N/A'}</div>
+                            </div>
+                            <div class="event-detail-section">
+                                <div class="event-detail-label">Summary</div>
+                                <div class="event-detail-value" style="font-size: 14px; line-height: 1.5; color: var(--text-secondary);">${event.value_summary || 'N/A'}</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-
-                <div class="event-detail-section">
-                    <div class="event-detail-label">Risk Level</div>
-                    <div class="event-detail-value">
-                        <span class="risk-badge ${event.risk_level}">${event.risk_level.toUpperCase()}</span>
-                    </div>
-                </div>
-
-                <div class="event-detail-section">
-                    <div class="event-detail-label">Risk Factors</div>
-                    <ul class="risk-reasons-list">
-                        ${event.risk_reasons.map(reason =>
-                            `<li>${riskReasonExplanations[reason] || reason}</li>`
-                        ).join('')}
-                    </ul>
-                </div>
-
-                <div class="event-detail-section">
-                    <div class="event-detail-label">Recommended Follow-up</div>
-                    <ul class="follow-up-list">
-                        ${getFollowUpRecommendations(event.risk_level).map(rec =>
-                            `<li>${rec}</li>`
-                        ).join('')}
-                    </ul>
-                </div>
+                ` : ''}
             `;
 
             modalBody.innerHTML = html;
-            modal.classList.add('show');
+            modal.classList.add('active');
         }
 
         // Close modal
         function closeModal() {
             const modal = document.getElementById('event-modal');
-            modal.classList.remove('show');
+            modal.classList.remove('active');
+        }
+
+        // Export events table (via print)
+        function exportEventsTable() {
+            window.print();
         }
 
         // Truncate URL for display
@@ -1571,6 +1510,12 @@
     <script>
         // ===== Initialize Dashboard on DOM Load =====
         document.addEventListener('DOMContentLoaded', () => {
+            // Initialize Executive Value Briefing (NEW - top priority)
+            populateExecutiveBriefing();
+            populateKPIOverview();
+            initValueCategoryChart();
+            populateExecInsightCards();
+
             // Initialize main charts
             initRiskChart();
             initDeptChart();

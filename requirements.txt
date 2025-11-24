@@ -1,2 +1,3 @@
 # Shadow AI Detection Platform
-# No external dependencies required - uses Python standard library only
+# Core dependencies
+openai>=1.0.0  # For value enrichment worker

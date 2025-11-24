@@ -11,6 +11,7 @@ A lightweight discovery tool that helps organizations detect and analyze "Shadow
 - **Use-Case Classification**: Automatically categorizes AI usage into business-friendly categories
 - **Interactive HTML Dashboard**: Exec-friendly dashboard with drill-down capabilities, filtering, and event details
 - **Structured Data Export**: JSON exports for further analysis and integration
+- **⭐ Value Enrichment (NEW)**: LLM-powered classification of business value, time savings, and ROI for each AI usage event
 
 ## Quick Start
 
@@ -333,6 +334,67 @@ DATA_EXTRACTION_THRESHOLD = 10_000  # bytes
 - Try opening in a different browser
 - Check browser console for JavaScript errors
 
+## Value Enrichment (Optional Feature)
+
+The platform now includes an **optional value enrichment worker** that uses OpenAI's GPT-4o-mini to classify the business value of each AI usage event.
+
+### What It Does
+
+For each event, the worker provides:
+- **Value Category**: Productivity, Quality, Revenue, Cost Reduction, or Innovation
+- **Estimated Time Savings**: Minutes saved per event
+- **Business Outcome**: Short description of business impact
+- **Department Classification**: Inferred from metadata/content
+- **Risk Assessment**: Governance risk level and policy alignment
+- **Plain-Language Summary**: What the user did and why it matters
+
+### Quick Start
+
+1. **Install dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. **Set your OpenAI API key**:
+   ```bash
+   export OPENAI_API_KEY="sk-..."
+   ```
+
+3. **Seed the database** (first time only):
+   ```bash
+   # Generate events
+   python -m shadowai.cli --input data/sample_logs.csv
+
+   # Load into database
+   python -m shadowai.seed_database --input output/events.json
+   ```
+
+4. **Run the enrichment worker**:
+   ```bash
+   # Continuous mode
+   python -m shadowai.value_enrichment_worker
+
+   # Or single iteration (for testing)
+   python -m shadowai.value_enrichment_worker --once
+   ```
+
+### Cost Estimate
+
+Using GPT-4o-mini, enrichment costs approximately:
+- **$0.0001 per event** (~$0.10 per 1,000 events)
+- **~$1.00 per month** for 10,000 events
+
+### Full Documentation
+
+See **[VALUE_ENRICHMENT.md](VALUE_ENRICHMENT.md)** for complete documentation including:
+- Architecture and components
+- Database schema
+- API integration
+- Cost analysis
+- Troubleshooting guide
+
+---
+
 ## License
 
 This is a prototype/demo tool. Use at your own discretion.
@@ -343,7 +405,14 @@ For questions or issues, contact your organization's IT security team or open an
 
 ## Version History
 
-### v0.2.0 (Current)
+### v0.3.0 (Current)
+- **NEW**: Value enrichment worker with OpenAI GPT-4o-mini integration
+- **NEW**: SQLite database for event persistence and enrichment storage
+- **NEW**: Business value classification (Productivity, Quality, Revenue, etc.)
+- **NEW**: Time savings estimation and ROI calculation capabilities
+- Comprehensive documentation for value enrichment feature
+
+### v0.2.0
 - Added multi-file / multi-day log support
 - Added PII/PHI risk detection with heuristic rules
 - Added use-case classification

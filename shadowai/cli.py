@@ -9,6 +9,7 @@ from .use_cases import apply_use_case_classification
 from .risk_rules import apply_risk_classification
 from .aggregator import aggregate_events
 from .report import write_events_json, write_summary_json, render_dashboard
+from .database import Database
 
 
 def main():
@@ -21,6 +22,11 @@ Examples:
   python -m shadowai.cli --input data/sample_logs.csv
   python -m shadowai.cli --input data/logs.csv --output-dir results
   python -m shadowai.cli --input-dir data/logs_week_01 --output-dir output
+  python -m shadowai.cli --input data/logs.csv --use-db-enrichment
+
+Note: Events are automatically saved to shadowai.db. To enrich them with value data:
+  1. Run: python -m shadowai.value_enrichment_worker
+  2. Re-run with --use-db-enrichment to see enriched data in reports
         """
     )
 
@@ -44,6 +50,24 @@ Examples:
         '--source-system',
         default='network_logs_v1',
         help='Source system identifier (default: network_logs_v1)'
+    )
+
+    parser.add_argument(
+        '--db-path',
+        default='shadowai.db',
+        help='Path to SQLite database file (default: shadowai.db)'
+    )
+
+    parser.add_argument(
+        '--no-db',
+        action='store_true',
+        help='Skip saving events to database (faster for one-off analysis)'
+    )
+
+    parser.add_argument(
+        '--use-db-enrichment',
+        action='store_true',
+        help='Load enriched data from database when generating reports (requires --db-path)'
     )
 
     args = parser.parse_args()
@@ -122,22 +146,59 @@ Examples:
     print(f"      → {pii_risk_count} events with potential PII/PHI risk")
 
     # Step 3: Apply risk classification
-    print(f"[3/6] Applying security risk classification rules")
+    print(f"[3/7] Applying security risk classification rules")
     apply_risk_classification(events)
     high_risk_count = sum(1 for e in events if e.risk_level == "high")
     medium_risk_count = sum(1 for e in events if e.risk_level == "medium")
     low_risk_count = sum(1 for e in events if e.risk_level == "low")
     print(f"      → High risk: {high_risk_count}, Medium risk: {medium_risk_count}, Low risk: {low_risk_count}")
 
-    # Step 4: Aggregate summary
-    print(f"[4/6] Aggregating usage data and generating insights")
+    # Step 4: Save to database (if enabled)
+    db = None
+    if not args.no_db:
+        print(f"[4/7] Saving events to database: {args.db_path}")
+        try:
+            db = Database(args.db_path)
+            for event in events:
+                db.upsert_event(event)
+            db_stats = db.get_stats()
+            print(f"      → Saved {len(events)} events ({db_stats['total_events']} total in DB, {db_stats['enriched_events']} enriched)")
+        except Exception as e:
+            print(f"      ⚠ Warning: Failed to save to database: {e}")
+            db = None
+    else:
+        print(f"[4/7] Skipping database save (--no-db flag set)")
+
+    # Step 4.5: Load enriched data from database if requested
+    if args.use_db_enrichment and db:
+        print(f"[4.5/7] Loading enriched data from database")
+        try:
+            enriched_events = db.get_all_events_with_enrichment()
+            # Create a lookup by event ID
+            enriched_lookup = {e.id: e for e in enriched_events}
+            # Merge enrichment data into current events
+            for event in events:
+                if event.id in enriched_lookup:
+                    enriched = enriched_lookup[event.id]
+                    event.value_category = enriched.value_category
+                    event.estimated_minutes_saved = enriched.estimated_minutes_saved
+                    event.business_outcome = enriched.business_outcome
+                    event.policy_alignment = enriched.policy_alignment
+                    event.value_summary = enriched.value_summary
+            enriched_count = sum(1 for e in events if e.value_category is not None)
+            print(f"      → Loaded enrichment for {enriched_count} events")
+        except Exception as e:
+            print(f"      ⚠ Warning: Failed to load enrichment: {e}")
+
+    # Step 5: Aggregate summary
+    print(f"[5/7] Aggregating usage data and generating insights")
     summary = aggregate_events(events)
     unique_users = summary['kpis']['unique_users']
     shadow_ai_pct = summary['kpis']['shadow_ai_percentage']
     print(f"      → {unique_users} unique users, {shadow_ai_pct}% shadow AI")
 
-    # Step 5: Write output files
-    print(f"[5/6] Writing output files to: {output_dir}")
+    # Step 6: Write output files
+    print(f"[6/7] Writing output files to: {output_dir}")
 
     events_path = output_dir / "events.json"
     write_events_json(events, events_path)
@@ -147,8 +208,8 @@ Examples:
     write_summary_json(summary, summary_path)
     print(f"      → {summary_path}")
 
-    # Step 6: Generate HTML dashboard
-    print(f"[6/6] Generating executive dashboard")
+    # Step 7: Generate HTML dashboard
+    print(f"[7/7] Generating executive dashboard")
     report_path = output_dir / "report.html"
     render_dashboard(events, summary, report_path)
     print(f"      → {report_path}")
@@ -161,11 +222,24 @@ Examples:
     print(f"High-risk events: {high_risk_count}")
     print(f"Unique users: {unique_users}")
     print(f"Shadow AI share: {shadow_ai_pct}%")
+    if summary.get('value_enrichment', {}).get('enriched_count', 0) > 0:
+        value_data = summary['value_enrichment']
+        print(f"Value enrichment: {value_data['enriched_count']} events enriched")
+        print(f"  → {value_data['total_hours_saved']:.1f} hours saved, avg {value_data['average_minutes_per_event']:.1f} min/event")
     print()
     print("Outputs:")
     print(f"  • Events data: {events_path}")
     print(f"  • Summary data: {summary_path}")
     print(f"  • Dashboard: {report_path}")
+    if not args.no_db:
+        print(f"  • Database: {args.db_path}")
+        if db:
+            db_stats = db.get_stats()
+            if db_stats['unenriched_events'] > 0:
+                print()
+                print(f"💡 Tip: {db_stats['unenriched_events']} events ready for value enrichment.")
+                print(f"   Run: python -m shadowai.value_enrichment_worker")
+                print(f"   Then re-run with --use-db-enrichment to see enriched data in reports.")
     print()
     print(f"Open {report_path} in your browser to view the executive dashboard.")
     print("=" * 60)
